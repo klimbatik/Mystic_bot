@@ -165,6 +165,11 @@ async def main():
     site = web.TCPSite(runner, host="0.0.0.0", port=int(os.getenv("PORT", 10000)))
     await site.start()
     print(f"✅ Вебхук запущен на {WEBHOOK_URL}")
+    # Добавляем закрытие сессии
+    try:
+        await asyncio.sleep(3600)  # Ждём 1 час
+    finally:
+        await runner.cleanup()
 
 if __name__ == "__main__":
     asyncio.run(main())
