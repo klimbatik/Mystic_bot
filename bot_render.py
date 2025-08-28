@@ -1,4 +1,4 @@
-import os
+﻿import os
 import asyncio
 from aiogram import Bot, Dispatcher, F
 from aiogram.types import Message
@@ -13,7 +13,8 @@ if not BOT_TOKEN:
 CHANNEL_LINK = "https://t.me/Master_Mystic"
 
 # 🛠️ Создаем бота и диспетчер
-bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
+from aiogram import DefaultBotProperties
+bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
 dp = Dispatcher()
 
 # ——— функция нормализации числа до 1..22 ———
