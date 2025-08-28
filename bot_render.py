@@ -1,19 +1,19 @@
 ﻿import os
 import asyncio
 from aiogram import Bot, Dispatcher, F
+from aiogram.client.default import DefaultBotProperties  # ✅ Правильный импорт!
 from aiogram.types import Message
 from aiogram.filters import Command
 
 # 🔐 Получаем токен из переменных окружения
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 if not BOT_TOKEN:
-    raise RuntimeError("BOT_TOKEN не установлен в переменных окружения. Проверь Render.")
+    raise RuntimeError("BOT_TOKEN не установлен в переменных окружения. Зайди в Render и добавь его!")
 
 # 📢 Ссылка на канал (убедись, что нет пробелов!)
 CHANNEL_LINK = "https://t.me/Master_Mystic"
 
-# 🛠️ Создаем бота и диспетчер
-from aiogram import DefaultBotProperties
+# 🛠️ Создаём бота с HTML-разметкой
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
 dp = Dispatcher()
 
