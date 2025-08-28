@@ -1,19 +1,19 @@
 ﻿import os
 import asyncio
 from aiogram import Bot, Dispatcher, F
-from aiogram.client.default import DefaultBotProperties  # ✅ Правильный импорт!
-from aiogram.types import Message
+from aiogram.client.default import DefaultBotProperties
+from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 from aiogram.filters import Command
 
-# 🔐 Получаем токен из переменных окружения
+# 🔐 Получаем токен и ссылку на канал из переменных окружения
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-if not BOT_TOKEN:
-    raise RuntimeError("BOT_TOKEN не установлен в переменных окружения. Зайди в Render и добавь его!")
-
-# 📢 Ссылка на канал (убедись, что нет пробелов!)
+CHANNEL_ID = "@Master_Mystic"  # Должно начинаться с @
 CHANNEL_LINK = "https://t.me/Master_Mystic"
 
-# 🛠️ Создаём бота с HTML-разметкой
+if not BOT_TOKEN:
+    raise RuntimeError("BOT_TOKEN не установлен в переменных окружения")
+
+# 🛠️ Инициализация бота
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
 dp = Dispatcher()
 
@@ -34,7 +34,7 @@ def calc_tail(day: int, month: int, year: int):
     N = norm22(M + D)
     return (M, N, D)
 
-# ——— словарь трактовок кармических хвостов ———
+# ——— словарь трактовок ———
 TAILS = {
     (18,6,6): "Любовная магия — опыт сильной зависимости/привязки.",
     (9,9,18): "Волшебник, магические знания — доступ к тайным знаниям.",
@@ -69,38 +69,78 @@ TAILS = {
 def describe_tail(triplet):
     return TAILS.get(triplet, "Неизвестный хвост — описание пока отсутствует.")
 
-# ——— обработчики команд ———
+# ——— кнопки ———
+# Главное меню
+keyboard = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="🔮 Рассчитать кармический хвост")],
+        [KeyboardButton(text="ℹ️ О проекте")]
+    ],
+    resize_keyboard=True,
+    one_time_keyboard=False
+)
+
+# Кнопка "Проверить подписку"
+check_sub_button = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [InlineKeyboardButton(text="✅ Проверить подписку", callback_data="check_sub")]
+    ]
+)
+
+# ——— команда /start ———
 @dp.message(Command("start"))
 async def start(message: Message):
     await message.answer(
         "Привет! Я бот <b>Master Mystic</b> 🌿\n"
         "Я рассчитываю твой <i>кармический хвост</i> по дате рождения.\n\n"
-        "👉 Используй команду:\n"
-        "<code>/tail ДД.ММ.ГГГГ</code> — чтобы узнать свой путь."
+        "Но сначала — подпишись на мой канал, чтобы получать магические знания:\n"
+        f"<a href='{CHANNEL_LINK}'>@Master_Mystic</a>\n\n"
+        "После подписки нажми кнопку ниже:",
+        reply_markup=check_sub_button
     )
 
-@dp.message(Command("tail"))
-async def tail_command(message: Message):
-    parts = message.text.split(maxsplit=1)
-    if len(parts) < 2:
-        await message.reply(
-            "❌ Укажи дату в формате:\n"
-            "<code>/tail ДД.ММ.ГГГГ</code>"
-        )
-        return
-
+# ——— проверка подписки ———
+async def is_user_subscribed(user_id: int) -> bool:
     try:
-        day, month, year = map(int, parts[1].split("."))
+        member = await bot.get_chat_member(CHANNEL_ID, user_id)
+        return member.status in ["member", "administrator", "creator"]
     except Exception:
-        await message.reply(
-            "⚠️ Неверный формат даты.\n"
-            "Используй: <code>ДД.ММ.ГГГГ</code>"
+        return False
+
+# ——— обработка кнопки "Проверить подписку" ———
+@dp.callback_query(F.data == "check_sub")
+async def handle_check_sub(callback):
+    if await is_user_subscribed(callback.from_user.id):
+        await callback.message.edit_text(
+            f"✨ Отлично! Ты подписан.\n\n"
+            f"Нажми кнопку ниже, чтобы рассчитать свой кармический хвост:",
+            reply_markup=None
         )
+        await callback.message.answer(
+            "Выбери действие:",
+            reply_markup=keyboard
+        )
+    else:
+        await callback.answer(
+            "❌ Ты ещё не подписан на канал. Подпишись и нажми снова!",
+            show_alert=True
+        )
+
+# ——— нажатие кнопки "Рассчитать" ———
+@dp.message(F.text == "🔮 Рассчитать кармический хвост")
+async def ask_for_date(message: Message):
+    await message.answer("Введите дату рождения в формате:\n<b>ДД.ММ.ГГГГ</b>")
+
+# ——— обработка даты ———
+@dp.message(F.text.regexp(r"^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(\d{4})$"))
+async def handle_date(message: Message):
+    try:
+        day, month, year = map(int, message.text.split("."))
+    except:
         return
 
-    # Проверка диапазона дат
     if not (1 <= day <= 31) or not (1 <= month <= 12) or year < 1900:
-        await message.reply("⚠️ Пожалуйста, введи корректную дату.")
+        await message.reply("⚠️ Введите корректную дату.")
         return
 
     tail_triplet = calc_tail(day, month, year)
@@ -109,8 +149,17 @@ async def tail_command(message: Message):
     await message.answer(
         f"🔮 <b>Твой кармический хвост:</b> {tail_triplet[0]}-{tail_triplet[1]}-{tail_triplet[2]}\n"
         f"📌 {description}\n\n"
-        f"👉 Подпишись на канал, чтобы получать больше магических знаний:\n"
-        f"<a href='{CHANNEL_LINK}'>Master Mystic</a>"
+        f"👉 Подпишись на канал: {CHANNEL_LINK}"
+    )
+
+# ——— о проекте ———
+@dp.message(F.text == "ℹ️ О проекте")
+async def about(message: Message):
+    await message.answer(
+        "🔮 <b>Master Mystic</b>\n\n"
+        "Этот бот помогает узнать свой кармический путь по дате рождения.\n\n"
+        "Разработан с любовью для тех, кто ищет глубину, смысл и магию в жизни.\n\n"
+        f"Канал: <a href='{CHANNEL_LINK}'>@Master_Mystic</a>"
     )
 
 # ——— запуск бота ———
