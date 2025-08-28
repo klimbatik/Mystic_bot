@@ -4,7 +4,7 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.client.default import DefaultBotProperties
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 from aiogram.filters import Command
-from aiogram.webhook.aiohttp_server import SimpleRequestHandler, AiohttpWebhookRunner
+from aiogram.webhook.aiohttp_server import SimpleRequestHandler
 from aiohttp import web
 
 # 🔐 Получаем токен и ссылку на канал
@@ -160,7 +160,7 @@ async def main():
     # Запускаем сервер
     app = web.Application()
     SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path="/webhook")
-    runner = AiohttpWebhookRunner(app)
+    runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, host="0.0.0.0", port=int(os.getenv("PORT", 10000)))
     await site.start()
