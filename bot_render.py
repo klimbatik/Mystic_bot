@@ -539,7 +539,7 @@ async def full_analysis(message: Message):
 @dp.callback_query(F.data == "think")
 async def think_callback(callback):
     # Ответ пользователю (без уведомления тебе)
-    await callback.answer("💡 Хорошо, подумай. Но знай — твоя судьба ждёт тебя!", show_alert=True)
+    await callback.answer("💡 Хорошо, подумай. Возвращайся, когда будешь готов к глубокому анализу!", show_alert=True)
 
 # ——— запуск вебхука ———
 async def main():
@@ -558,3 +558,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
