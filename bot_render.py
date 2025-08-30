@@ -510,7 +510,6 @@ async def handle_date(message: Message):
         f"{detailed_text}",
         reply_markup=read_button
     )
-    await message.answer("📥", reply_markup=download_button)
 
 @dp.message(F.text == "О проекте")
 async def about(message: Message):
@@ -558,5 +557,6 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
 
 
