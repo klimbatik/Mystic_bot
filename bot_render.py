@@ -392,35 +392,35 @@ DETAILED_DESCRIPTIONS = {
 
 # ——— ссылки на PDF-файлы ———
 PDF_LINKS = {
-    (18,6,6): "https://drive.google.com/file/d/10R1PoK8lQbcP5fEVVXecMoLymi4 …/view?usp=sharing",
-    (9,9,18): "https://drive.google.com/file/d/1QaMYUJv--n8iLwseG8_MAgz79dg …/view?usp=sharing",
-    (9,18,9): "https://drive.google.com/file/d/1uRuiDM-csTgk6SGweSkhbGT20yf …/view?usp=sharing",
-    (18,9,9): "https://drive.google.com/file/d/10kDSS349TSu9eYaiCo61uWVjx11 …/view?usp=sharing",
-    (6,5,17): "https://drive.google.com/file/d/1IOKcMbpaRniLBmPL8s-anCwi1eB …/view?usp=sharing",
-    (15,20,5): "https://drive.google.com/file/d/1t3mCNby-NCCBE4Pz_EFbuvXsJim …/view?usp=sharing",
-    (15,5,8): "https://drive.google.com/file/d/161NMgmh9KDcrK0og17JrHBSloSN …/view?usp=sharing",
-    (3,9,12): "https://drive.google.com/file/d/1w69XCIBm3u6XVTXJF893iL3nV_C …/view?usp=sharing",
-    (3,12,9): "https://drive.google.com/file/d/1w69XCIBm3u6XVTXJF893iL3nV_C …/view?usp=sharing",
-    (9,12,3): "https://drive.google.com/file/d/1w69XCIBm3u6XVTXJF893iL3nV_C …/view?usp=sharing",
-    (15,8,11): "https://drive.google.com/file/d/14eTveJvncg3FRsOlGqBuiDD1Vd8 …/view?usp=sharing",
-    (9,15,6): "https://drive.google.com/file/d/18wj_PCzN7ZEaUvfmGiDW2AttFdY …/view?usp=sharing",
-    (6,17,11): "https://drive.google.com/file/d/1krx7t8o2S8cFdp58HES9lyblQq7 …/view?usp=sharing",
-    (12,19,7): "https://drive.google.com/file/d/1RYUBW4pCeSmsXwcjjTLiWdXHWP1 …/view?usp=sharing",
-    (21,4,10): "https://drive.google.com/file/d/1O27XG5pSIcGbfsNSQILNTbNVdXx …/view?usp=sharing",
-    (12,16,4): "https://drive.google.com/file/d/12EhO882TN6FFZNkV1LV18Gzy6SG …/view?usp=sharing",
-    (3,22,19): "https://drive.google.com/file/d/1BBgsTpA_twkhsgAly9i3DtR6fse …/view?usp=sharing",
-    (21,10,16): "https://drive.google.com/file/d/1unFYU8JlQPhYPmFgLlaRpDwX49T …/view?usp=sharing",
-    (6,8,20): "https://drive.google.com/file/d/1SdzrR0vieHPZsPI4oxAynQ8KUgN …/view?usp=sharing",
-    (3,7,22): "https://drive.google.com/file/d/1dM0z8LpAgNZEO2bViZXiJBQssG1 …/view?usp=sharing",
-    (9,3,21): "https://drive.google.com/file/d/15pb7irKooMODIvkGacYGNQbGgng …/view?usp=sharing",
-    (21,7,13): "https://drive.google.com/file/d/1lPwcqfBzC9gUNdC_10QYPavb3v3 …/view?usp=sharing",
-    (18,6,15): "https://drive.google.com/file/d/1PWq5Vf6nBrL0eZPWXJa4SmLHsdb …/view?usp=sharing",
-    (6,20,14): "https://drive.google.com/file/d/1kugwosiU6g31pPujfCZfSo9WGDo …/view?usp=sharing",
-    (21,10,7): "https://drive.google.com/file/d/1vl2gBjs_jQBDHakFJBsHr4uU7Oa …/view?usp=sharing",
-    (3,13,10): "https://drive.google.com/file/d/10_7IQ-bHmJnmmzYLwpF06NDKlRh …/view?usp=sharing",
-    (12,18,3): "https://drive.google.com/file/d/1e1xcWuo1uYHDLYGJGkzhP1niun9 …/view?usp=sharing",
-    (18,3,12): "https://drive.google.com/file/d/1e1xcWuo1uYHDLYGJGkzhP1niun9 …/view?usp=sharing",
-    (6,14,8): "https://drive.google.com/file/d/1WC9HbCl6PfDasDX1uYM6qcF7nvF …/view?usp=sharing",
+    (18,6,6): "https://drive.google.com/file/d/10R1PoK8lQbcP5fEVVXecMoLymi4/view?usp=sharing",
+    (9,9,18): "https://drive.google.com/file/d/1QaMYUJv--n8iLwseG8_MAgz79dg/view?usp=sharing",
+    (9,18,9): "https://drive.google.com/file/d/1uRuiDM-csTgk6SGweSkhbGT20yf/view?usp=sharing",
+    (18,9,9): "https://drive.google.com/file/d/10kDSS349TSu9eYaiCo61uWVjx11/view?usp=sharing",
+    (6,5,17): "https://drive.google.com/file/d/1IOKcMbpaRniLBmPL8s-anCwi1eB/view?usp=sharing",
+    (15,20,5): "https://drive.google.com/file/d/1t3mCNby-NCCBE4Pz_EFbuvXsJim/view?usp=sharing",
+    (15,5,8): "https://drive.google.com/file/d/161NMgmh9KDcrK0og17JrHBSloSN/view?usp=sharing",
+    (3,9,12): "https://drive.google.com/file/d/1w69XCIBm3u6XVTXJF893iL3nV_C/view?usp=sharing",
+    (3,12,9): "https://drive.google.com/file/d/1w69XCIBm3u6XVTXJF893iL3nV_C/view?usp=sharing",
+    (9,12,3): "https://drive.google.com/file/d/1w69XCIBm3u6XVTXJF893iL3nV_C/view?usp=sharing",
+    (15,8,11): "https://drive.google.com/file/d/14eTveJvncg3FRsOlGqBuiDD1Vd8/view?usp=sharing",
+    (9,15,6): "https://drive.google.com/file/d/18wj_PCzN7ZEaUvfmGiDW2AttFdY/view?usp=sharing",
+    (6,17,11): "https://drive.google.com/file/d/1krx7t8o2S8cFdp58HES9lyblQq7/view?usp=sharing",
+    (12,19,7): "https://drive.google.com/file/d/1RYUBW4pCeSmsXwcjjTLiWdXHWP1/view?usp=sharing",
+    (21,4,10): "https://drive.google.com/file/d/1O27XG5pSIcGbfsNSQILNTbNVdXx/view?usp=sharing",
+    (12,16,4): "https://drive.google.com/file/d/12EhO882TN6FFZNkV1LV18Gzy6SG/view?usp=sharing",
+    (3,22,19): "https://drive.google.com/file/d/1BBgsTpA_twkhsgAly9i3DtR6fse/view?usp=sharing",
+    (21,10,16): "https://drive.google.com/file/d/1unFYU8JlQPhYPmFgLlaRpDwX49T/view?usp=sharing",
+    (6,8,20): "https://drive.google.com/file/d/1SdzrR0vieHPZsPI4oxAynQ8KUgN/view?usp=sharing",
+    (3,7,22): "https://drive.google.com/file/d/1dM0z8LpAgNZEO2bViZXiJBQssG1/view?usp=sharing",
+    (9,3,21): "https://drive.google.com/file/d/15pb7irKooMODIvkGacYGNQbGgng/view?usp=sharing",
+    (21,7,13): "https://drive.google.com/file/d/1lPwcqfBzC9gUNdC_10QYPavb3v3/view?usp=sharing",
+    (18,6,15): "https://drive.google.com/file/d/1PWq5Vf6nBrL0eZPWXJa4SmLHsdb/view?usp=sharing",
+    (6,20,14): "https://drive.google.com/file/d/1kugwosiU6g31pPujfCZfSo9WGDo/view?usp=sharing",
+    (21,10,7): "https://drive.google.com/file/d/1vl2gBjs_jQBDHakFJBsHr4uU7Oa/view?usp=sharing",
+    (3,13,10): "https://drive.google.com/file/d/10_7IQ-bHmJnmmzYLwpF06NDKlRh/view?usp=sharing",
+    (12,18,3): "https://drive.google.com/file/d/1e1xcWuo1uYHDLYGJGkzhP1niun9/view?usp=sharing",
+    (18,3,12): "https://drive.google.com/file/d/1e1xcWuo1uYHDLYGJGkzhP1niun9/view?usp=sharing",
+    (6,14,8): "https://drive.google.com/file/d/1WC9HbCl6PfDasDX1uYM6qcF7nvF/view?usp=sharing",
 }
 
 # ——— кнопки ———
@@ -439,7 +439,6 @@ check_sub_button = InlineKeyboardMarkup(
     ]
 )
 
-# Клавиатура с кнопкой "Назад"
 back_keyboard = ReplyKeyboardMarkup(
     keyboard=[[KeyboardButton(text="Назад")]],
     resize_keyboard=True
@@ -481,87 +480,83 @@ async def handle_check_sub(callback):
 async def ask_for_date(message: Message):
     await message.answer(
         "Введите дату рождения в формате <b>ДД.ММ.ГГГГ</b> (например, 15.04.1990):",
-        reply_markup=back_keyboard # Показываем клавиатуру с кнопкой "Назад"
+        reply_markup=back_keyboard
     )
 
 # Обработчик кнопки "Назад"
 @dp.message(F.text == "Назад")
 async def handle_go_back(message: Message):
-    # Убираем клавиатуру "Назад" и возвращаем главное меню
     await message.answer("Выбери действие:", reply_markup=keyboard)
 
-# Обработчик некорректного текстового ввода (включая неправильный формат даты)
-# Должен идти ПОСЛЕ более специфичных обработчиков, включая handle_date
-@dp.message(F.text)
-async def handle_invalid_input(message: Message):
-    # Отправляем сообщение об ошибке и снова предлагаем ввести дату или вернуться
-    await message.answer(
-        "⚠️ Пожалуйста, введите дату рождения в формате <b>ДД.ММ.ГГГГ</b> (например, 15.04.1990) "
-        "или нажмите кнопку <b>Назад</b>, чтобы вернуться в главное меню.",
-        reply_markup=back_keyboard # Показываем клавиатуру с кнопкой "Назад" снова
-    )
-
+# ——— обработчик корректной даты ———
 @dp.message(F.text.regexp(r"^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(\d{4})$"))
 async def handle_date(message: Message):
     try:
-        # Убираем все лишние символы (пробелы, табуляции и т.д.) и разбиваем по точкам
         cleaned_text = message.text.strip()
         parts = cleaned_text.split('.')
-        
-        # Проверяем, что получилось ровно три части
         if len(parts) != 3:
             await message.reply("⚠️ Ошибка формата даты. Пожалуйста, введите дату в формате ДД.ММ.ГГГГ.", reply_markup=back_keyboard)
             return
-        
-        # Пытаемся преобразовать каждую часть в целое число
+
         day_str, month_str, year_str = parts[0], parts[1], parts[2]
-        
-        # Проверяем, что строки состоят только из цифр
+
         if not (day_str.isdigit() and month_str.isdigit() and year_str.isdigit()):
             await message.reply("⚠️ Ошибка формата даты. Пожалуйста, введите дату в формате ДД.ММ.ГГГГ.", reply_markup=back_keyboard)
             return
-            
+
         day, month, year = int(day_str), int(month_str), int(year_str)
-    except:
-        # Если что-то пошло не так при парсинге (например, не удалось преобразовать в число)
-        await message.reply("⚠️ Ошибка обработки даты. Попробуйте снова.", reply_markup=back_keyboard)
-        return
 
-    # Проверяем диапазоны
-    if not (1 <= day <= 31) or not (1 <= month <= 12) or year < 1900:
-        await message.reply("⚠️ Введите корректную дату.", reply_markup=back_keyboard)
-        return
+        # Проверка диапазонов
+        if not (1 <= day <= 31) or not (1 <= month <= 12) or year < 1900:
+            await message.reply("⚠️ Введите корректную дату.", reply_markup=back_keyboard)
+            return
 
-    tail_triplet = calc_tail(day, month, year)
-    description = describe_tail(tail_triplet)
-    detailed_text = DETAILED_DESCRIPTIONS.get(tail_triplet, "Подробное описание пока недоступно.")
+        # Проверка на существование даты (например, 31 февраля)
+        from datetime import datetime
+        try:
+            datetime(year, month, day)
+        except ValueError:
+            await message.reply("❌ Такой даты не существует.", reply_markup=back_keyboard)
+            return
 
-    # Кнопка "Читать полностью" (открыть PDF в браузере)
-    read_button = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="📖 Читать полностью", url=PDF_LINKS.get(tail_triplet, "#"))]
-        ]
-    )
+        tail_triplet = calc_tail(day, month, year)
+        description = describe_tail(tail_triplet)
+        detailed_text = DETAILED_DESCRIPTIONS.get(tail_triplet, "Подробное описание пока недоступно.")
 
-    # Кнопка "Скачать PDF" — только кнопка, без текста
-    download_button = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="📥", url=PDF_LINKS.get(tail_triplet, "#"))]
-        ]
-    )
+        read_button = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [InlineKeyboardButton(text="📖 Читать полностью", url=PDF_LINKS.get(tail_triplet, "#"))]
+            ]
+        )
 
-    # Отправляем результат + подробное описание
-    # После успешного расчёта убираем клавиатуру "Назад" и возвращаем в главное меню
+        download_button = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [InlineKeyboardButton(text="📥", url=PDF_LINKS.get(tail_triplet, "#"))]
+            ]
+        )
+
+        await message.answer(
+            f"🔮 <b>Твой кармический хвост:</b> {tail_triplet[0]}-{tail_triplet[1]}-{tail_triplet[2]}\n"
+            f"📌 {description}\n\n"
+            f"{detailed_text}",
+            reply_markup=read_button
+        )
+        await message.answer("📥", reply_markup=download_button)
+        await message.answer("Выбери действие:", reply_markup=keyboard)
+
+    except Exception as e:
+        print(f"Ошибка при обработке даты: {e}")
+        await message.reply("⚠️ Произошла ошибка. Попробуйте снова.", reply_markup=back_keyboard)
+
+
+# ——— обработчик некорректного текста ———
+@dp.message(F.text)
+async def handle_invalid_input(message: Message):
     await message.answer(
-        f"🔮 <b>Твой кармический хвост:</b> {tail_triplet[0]}-{tail_triplet[1]}-{tail_triplet[2]}\n"
-        f"📌 {description}\n\n"
-        f"{detailed_text}",
-        reply_markup=read_button
+        "⚠️ Пожалуйста, введите дату рождения в формате <b>ДД.ММ.ГГГГ</b> (например, 15.04.1990) "
+        "или нажмите кнопку <b>Назад</b>, чтобы вернуться в главное меню.",
+        reply_markup=back_keyboard
     )
-    await message.answer("📥", reply_markup=download_button)
-    # Отправляем сообщение с главным меню, убирая клавиатуру "Назад"
-    await message.answer("Выбери действие:", reply_markup=keyboard)
-
 
 @dp.message(F.text == "О проекте")
 async def about(message: Message):
@@ -569,15 +564,14 @@ async def about(message: Message):
         "🔮 <b>Master Mystic</b>\n\n"
         "Разработан с любовью для тех, кто ищет глубину, смысл и магию в жизни.\n\n"
         f"Канал: <a href='{CHANNEL_LINK}'>@Master_Mystic</a>",
-        reply_markup=keyboard # Убедимся, что главное меню показывается
+        reply_markup=keyboard
     )
 
 @dp.message(F.text == "Сделать полный анализ")
 async def full_analysis(message: Message):
-    # Сообщение с ценой и кнопками
     analysis_button = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="✅ Продолжить", url="https://t.me/Mattrehka ")],
+            [InlineKeyboardButton(text="✅ Продолжить", url="https://t.me/Mattrehka")],
             [InlineKeyboardButton(text="⏸️ Я подумаю", callback_data="think")]
         ]
     )
@@ -590,10 +584,7 @@ async def full_analysis(message: Message):
 
 @dp.callback_query(F.data == "think")
 async def think_callback(callback):
-    # Ответ пользователю (без уведомления тебе)
     await callback.answer("💡 Хорошо, подумай. Возвращайся, когда будешь готов к глубокому анализу!", show_alert=True)
-    # Также можно отправить сообщение в чат, если нужно
-    # await callback.message.answer("Выбери действие:", reply_markup=keyboard)
 
 # ——— запуск вебхука ———
 async def main():
