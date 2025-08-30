@@ -538,12 +538,7 @@ async def full_analysis(message: Message):
 
 @dp.callback_query(F.data == "think")
 async def think_callback(callback):
-    # Отправляем уведомление тебе
-    await bot.send_message(
-        chat_id=1030370280,  # Твой ID
-        text=f"🔔 Клиент {callback.from_user.username or callback.from_user.id} ({callback.from_user.id}) нажал 'Я подумаю'"
-    )
-    # Ответ пользователю
+    # Ответ пользователю (без уведомления тебе)
     await callback.answer("💡 Хорошо, подумай. Но знай — твоя судьба ждёт тебя!", show_alert=True)
 
 # ——— запуск вебхука ———
