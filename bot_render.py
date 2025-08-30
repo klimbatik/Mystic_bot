@@ -540,7 +540,7 @@ async def full_analysis(message: Message):
 async def think_callback(callback):
     # Отправляем уведомление тебе
     await bot.send_message(
-        chat_id=YOUR_TELEGRAM_ID,  # ❗️ Замени на свой ID
+        chat_id=1030370280,  # ❗️ Замени на свой ID
         text=f"🔔 Клиент {callback.from_user.username} ({callback.from_user.id}) нажал 'Я подумаю'"
     )
     await callback.answer("💡 Хорошо, подумайте. Я всегда рядом.")  # Ответ пользователю
@@ -561,4 +561,5 @@ async def main():
         await runner.cleanup()
 
 if __name__ == "__main__":
+
     asyncio.run(main())
