@@ -6,28 +6,28 @@ from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, R
 from aiogram.filters import Command
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler
 from aiohttp import web
- 
+
 # 🔐 Переменные окружения
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHANNEL_ID = "@Master_Mystic"
 CHANNEL_LINK = "https://t.me/Master_Mystic"
- 
+
 if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN не установлен в переменных окружения")
- 
+
 # 🌐 URL вебхука
 WEBHOOK_URL = f"https://{os.getenv('RENDER_EXTERNAL_HOSTNAME')}/webhook"
- 
+
 # 🛠️ Инициализация бота
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
 dp = Dispatcher()
- 
+
 # ——— функция нормализации ———
 def norm22(n: int) -> int:
     while n > 22:
         n = sum(int(digit) for digit in str(n))
     return n
- 
+
 # ——— расчёт хвоста ———
 def calc_tail(day: int, month: int, year: int):
     A = norm22(day)
@@ -38,7 +38,7 @@ def calc_tail(day: int, month: int, year: int):
     M = norm22(D + E)
     N = norm22(M + D)
     return (M, N, D)
- 
+
 # ——— краткие описания ———
 TAILS = {
     (18,6,6): "Любовная магия — опыт сильной зависимости/привязки.",
@@ -71,10 +71,10 @@ TAILS = {
     (18,3,12): "Физические страдания — испытания телом и духом.",
     (6,14,8): "Диктатор — контроль, власть и подавление воли других.",
 }
- 
+
 def describe_tail(triplet):
     return TAILS.get(triplet, "Неизвестный хвост")
- 
+
 # ——— подробные описания ———
 DETAILED_DESCRIPTIONS = {
     (18,6,6): (
@@ -389,7 +389,7 @@ DETAILED_DESCRIPTIONS = {
         "• Будь коммуникабельным, не закрывайся."
     ),
 }
- 
+
 # ——— ссылки на PDF-файлы ———
 PDF_LINKS = {
     (18,6,6): "https://drive.google.com/file/d/10R1PoK8lQbcP5fEVVXecMoLymi4 …/view?usp=sharing",
@@ -422,7 +422,7 @@ PDF_LINKS = {
     (18,3,12): "https://drive.google.com/file/d/1e1xcWuo1uYHDLYGJGkzhP1niun9 …/view?usp=sharing",
     (6,14,8): "https://drive.google.com/file/d/1WC9HbCl6PfDasDX1uYM6qcF7nvF …/view?usp=sharing",
 }
- 
+
 # ——— кнопки ———
 keyboard = ReplyKeyboardMarkup(
     keyboard=[
@@ -432,19 +432,19 @@ keyboard = ReplyKeyboardMarkup(
     ],
     resize_keyboard=True
 )
- 
+
 check_sub_button = InlineKeyboardMarkup(
     inline_keyboard=[
         [InlineKeyboardButton(text="✅ Проверить подписку", callback_data="check_sub")]
     ]
 )
- 
+
 # Клавиатура с кнопкой "Назад"
 back_keyboard = ReplyKeyboardMarkup(
     keyboard=[[KeyboardButton(text="Назад")]],
     resize_keyboard=True
 )
- 
+
 # ——— команда /start ———
 @dp.message(Command("start"))
 async def start(message: Message):
@@ -456,7 +456,7 @@ async def start(message: Message):
         "После подписки нажми кнопку:",
         reply_markup=check_sub_button
     )
- 
+
 # ——— проверка подписки ———
 async def is_user_subscribed(user_id: int) -> bool:
     try:
@@ -464,7 +464,7 @@ async def is_user_subscribed(user_id: int) -> bool:
         return member.status in ["member", "administrator", "creator"]
     except Exception:
         return False
- 
+
 @dp.callback_query(F.data == "check_sub")
 async def handle_check_sub(callback):
     if await is_user_subscribed(callback.from_user.id):
@@ -476,20 +476,20 @@ async def handle_check_sub(callback):
         await callback.message.answer("Выбери действие:", reply_markup=keyboard)
     else:
         await callback.answer("❌ Подпишись и нажми снова!", show_alert=True)
- 
+
 @dp.message(F.text == "Рассчитать кармический хвост")
 async def ask_for_date(message: Message):
     await message.answer(
         "Введите дату рождения в формате <b>ДД.ММ.ГГГГ</b> (например, 15.04.1990):",
         reply_markup=back_keyboard # Показываем клавиатуру с кнопкой "Назад"
     )
- 
+
 # Обработчик кнопки "Назад"
 @dp.message(F.text == "Назад")
 async def handle_go_back(message: Message):
     # Убираем клавиатуру "Назад" и возвращаем главное меню
     await message.answer("Выбери действие:", reply_markup=keyboard)
- 
+
 # Обработчик некорректного текстового ввода (включая неправильный формат даты)
 # Должен идти ПОСЛЕ более специфичных обработчиков, включая handle_date
 @dp.message(F.text)
@@ -500,7 +500,7 @@ async def handle_invalid_input(message: Message):
         "или нажмите кнопку <b>Назад</b>, чтобы вернуться в главное меню.",
         reply_markup=back_keyboard # Показываем клавиатуру с кнопкой "Назад" снова
     )
- 
+
 @dp.message(F.text.regexp(r"^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(\d{4})$"))
 async def handle_date(message: Message):
     try:
@@ -509,29 +509,29 @@ async def handle_date(message: Message):
         # Это маловероятно сработает из-за регулярки, но на всякий случай
         await message.reply("⚠️ Ошибка обработки даты. Попробуйте снова.", reply_markup=back_keyboard)
         return
- 
+
     if not (1 <= day <= 31) or not (1 <= month <= 12) or year < 1900:
         await message.reply("⚠️ Введите корректную дату.", reply_markup=back_keyboard)
         return
- 
+
     tail_triplet = calc_tail(day, month, year)
     description = describe_tail(tail_triplet)
     detailed_text = DETAILED_DESCRIPTIONS.get(tail_triplet, "Подробное описание пока недоступно.")
- 
+
     # Кнопка "Читать полностью" (открыть PDF в браузере)
     read_button = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="📖 Читать полностью", url=PDF_LINKS.get(tail_triplet, "#"))]
         ]
     )
- 
+
     # Кнопка "Скачать PDF" — только кнопка, без текста
     download_button = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="📥", url=PDF_LINKS.get(tail_triplet, "#"))]
         ]
     )
- 
+
     # Отправляем результат + подробное описание
     # После успешного расчёта убираем клавиатуру "Назад" и возвращаем в главное меню
     await message.answer(
@@ -543,7 +543,8 @@ async def handle_date(message: Message):
     await message.answer("📥", reply_markup=download_button)
     # Отправляем сообщение с главным меню, убирая клавиатуру "Назад"
     await message.answer("Выбери действие:", reply_markup=keyboard)
- 
+
+
 @dp.message(F.text == "О проекте")
 async def about(message: Message):
     await message.answer(
@@ -552,7 +553,7 @@ async def about(message: Message):
         f"Канал: <a href='{CHANNEL_LINK}'>@Master_Mystic</a>",
         reply_markup=keyboard # Убедимся, что главное меню показывается
     )
- 
+
 @dp.message(F.text == "Сделать полный анализ")
 async def full_analysis(message: Message):
     # Сообщение с ценой и кнопками
@@ -568,14 +569,14 @@ async def full_analysis(message: Message):
         "🔹 Я проведу глубокий разбор вашей судьбы, кармы и путей развития.",
         reply_markup=analysis_button
     )
- 
+
 @dp.callback_query(F.data == "think")
 async def think_callback(callback):
     # Ответ пользователю (без уведомления тебе)
     await callback.answer("💡 Хорошо, подумай. Возвращайся, когда будешь готов к глубокому анализу!", show_alert=True)
     # Также можно отправить сообщение в чат, если нужно
     # await callback.message.answer("Выбери действие:", reply_markup=keyboard)
- 
+
 # ——— запуск вебхука ———
 async def main():
     await bot.set_webhook(WEBHOOK_URL)
@@ -590,6 +591,6 @@ async def main():
         await asyncio.sleep(3600)
     finally:
         await runner.cleanup()
- 
+
 if __name__ == "__main__":
     asyncio.run(main())
