@@ -1,4 +1,4 @@
-﻿import os
+import os
 import asyncio
 from aiogram import Bot, Dispatcher, F
 from aiogram.client.default import DefaultBotProperties
@@ -427,8 +427,8 @@ PDF_LINKS = {
 keyboard = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="Рассчитать кармический хвост")],
-        [KeyboardButton(text="ℹ️ О проекте")],
-        [KeyboardButton(text="Сделать полный анализ")]
+        [KeyboardButton(text="Сделать полный анализ")],
+        [KeyboardButton(text="О проекте")]
     ],
     resize_keyboard=True
 )
@@ -471,7 +471,7 @@ async def handle_check_sub(callback):
     else:
         await callback.answer("❌ Подпишись и нажми снова!", show_alert=True)
 
-@dp.message(F.text == "🔮 Рассчитать кармический хвост")
+@dp.message(F.text == "Рассчитать кармический хвост")
 async def ask_for_date(message: Message):
     await message.answer("Введите дату: <b>ДД.ММ.ГГГГ</b>")
 
@@ -512,7 +512,7 @@ async def handle_date(message: Message):
     )
     await message.answer("📥", reply_markup=download_button)
 
-@dp.message(F.text == "ℹ️ О проекте")
+@dp.message(F.text == "О проекте")
 async def about(message: Message):
     await message.answer(
         "🔮 <b>Master Mystic</b>\n\n"
@@ -532,7 +532,7 @@ async def full_analysis(message: Message):
     await message.answer(
         "<b>Полный анализ по вашей Матрице Судьбы будет стоить 1000 рублей.</b>\n\n"
         "🔹 Информация о вас будет передана мне в личные сообщения.\n"
-        "🔹 Я проведу глубокий разбор вашей судьбы, кармы и путей развития.",
+        "🔹 Мы проведём глубокий разбор вашей судьбы, кармы и путей развития.",
         reply_markup=analysis_button
     )
 
@@ -540,10 +540,11 @@ async def full_analysis(message: Message):
 async def think_callback(callback):
     # Отправляем уведомление тебе
     await bot.send_message(
-        chat_id=1030370280,  # ❗️ Замени на свой ID
-        text=f"🔔 Клиент {callback.from_user.username} ({callback.from_user.id}) нажал 'Я подумаю'"
+        chat_id=1030370280,  # Твой ID
+        text=f"🔔 Клиент {callback.from_user.username or callback.from_user.id} ({callback.from_user.id}) нажал 'Я подумаю'"
     )
-    await callback.answer("💡 Хорошо, подумайте. Я всегда рядом.")  # Ответ пользователю
+    # Ответ пользователю
+    await callback.answer("💡 Хорошо, подумай. Но знай — твоя судьба ждёт тебя!", show_alert=True)
 
 # ——— запуск вебхука ———
 async def main():
@@ -561,6 +562,4 @@ async def main():
         await runner.cleanup()
 
 if __name__ == "__main__":
-
     asyncio.run(main())
-
