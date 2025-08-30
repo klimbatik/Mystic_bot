@@ -504,12 +504,30 @@ async def handle_invalid_input(message: Message):
 @dp.message(F.text.regexp(r"^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(\d{4})$"))
 async def handle_date(message: Message):
     try:
-        day, month, year = map(int, message.text.split("."))
+        # Убираем все лишние символы (пробелы, табуляции и т.д.) и разбиваем по точкам
+        cleaned_text = message.text.strip()
+        parts = cleaned_text.split('.')
+        
+        # Проверяем, что получилось ровно три части
+        if len(parts) != 3:
+            await message.reply("⚠️ Ошибка формата даты. Пожалуйста, введите дату в формате ДД.ММ.ГГГГ.", reply_markup=back_keyboard)
+            return
+        
+        # Пытаемся преобразовать каждую часть в целое число
+        day_str, month_str, year_str = parts[0], parts[1], parts[2]
+        
+        # Проверяем, что строки состоят только из цифр
+        if not (day_str.isdigit() and month_str.isdigit() and year_str.isdigit()):
+            await message.reply("⚠️ Ошибка формата даты. Пожалуйста, введите дату в формате ДД.ММ.ГГГГ.", reply_markup=back_keyboard)
+            return
+            
+        day, month, year = int(day_str), int(month_str), int(year_str)
     except:
-        # Это маловероятно сработает из-за регулярки, но на всякий случай
+        # Если что-то пошло не так при парсинге (например, не удалось преобразовать в число)
         await message.reply("⚠️ Ошибка обработки даты. Попробуйте снова.", reply_markup=back_keyboard)
         return
 
+    # Проверяем диапазоны
     if not (1 <= day <= 31) or not (1 <= month <= 12) or year < 1900:
         await message.reply("⚠️ Введите корректную дату.", reply_markup=back_keyboard)
         return
@@ -559,7 +577,7 @@ async def full_analysis(message: Message):
     # Сообщение с ценой и кнопками
     analysis_button = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="✅ Продолжить", url="https://t.me/Mattrehka")],
+            [InlineKeyboardButton(text="✅ Продолжить", url="https://t.me/Mattrehka ")],
             [InlineKeyboardButton(text="⏸️ Я подумаю", callback_data="think")]
         ]
     )
