@@ -392,35 +392,35 @@ DETAILED_DESCRIPTIONS = {
 
 # ——— ссылки на PDF-файлы ———
 PDF_LINKS = {
-    (18,6,6): "https://drive.google.com/uc?export=download&id=10R1PoK8lQbcP5fEVVXecMoLymi45tsGW",
-    (9,9,18): "https://drive.google.com/uc?export=download&id=1QaMYUJv--n8iLwseG8_MAgz79dggEgg6",
-    (9,18,9): "https://drive.google.com/uc?export=download&id=1uRuiDM-csTgk6SGweSkhbGT20yfK1kXd",
-    (18,9,9): "https://drive.google.com/uc?export=download&id=10kDSS349TSu9eYaiCo61uWVjx11WOWRA",
-    (6,5,17): "https://drive.google.com/uc?export=download&id=1IOKcMbpaRniLBmPL8s-anCwi1eBrr_O9",
-    (15,20,5): "https://drive.google.com/uc?export=download&id=1t3mCNby-NCCBE4Pz_EFbuvXsJim9mpqG",
-    (15,5,8): "https://drive.google.com/uc?export=download&id=161NMgmh9KDcrK0og17JrHBSloSNYvNmz",
-    (3,9,12): "https://drive.google.com/uc?export=download&id=1w69XCIBm3u6XVTXJF893iL3nV_CzgaRJ",
-    (3,12,9): "https://drive.google.com/uc?export=download&id=1w69XCIBm3u6XVTXJF893iL3nV_CzgaRJ",
-    (9,12,3): "https://drive.google.com/uc?export=download&id=1w69XCIBm3u6XVTXJF893iL3nV_CzgaRJ",
-    (15,8,11): "https://drive.google.com/uc?export=download&id=14eTveJvncg3FRsOlGqBuiDD1Vd885BcE",
-    (9,15,6): "https://drive.google.com/uc?export=download&id=18wj_PCzN7ZEaUvfmGiDW2AttFdY15snQ",
-    (6,17,11): "https://drive.google.com/uc?export=download&id=1krx7t8o2S8cFdp58HES9lyblQq7nfgKt",
-    (12,19,7): "https://drive.google.com/uc?export=download&id=1RYUBW4pCeSmsXwcjjTLiWdXHWP1uud2z",
-    (21,4,10): "https://drive.google.com/uc?export=download&id=1O27XG5pSIcGbfsNSQILNTbNVdXxYbf5Z",
-    (12,16,4): "https://drive.google.com/uc?export=download&id=12EhO882TN6FFZNkV1LV18Gzy6SGTbJaF",
-    (3,22,19): "https://drive.google.com/uc?export=download&id=1BBgsTpA_twkhsgAly9i3DtR6fseIMlRa",
-    (21,10,16): "https://drive.google.com/uc?export=download&id=1unFYU8JlQPhYPmFgLlaRpDwX49TBP2WE",
-    (6,8,20): "https://drive.google.com/uc?export=download&id=1SdzrR0vieHPZsPI4oxAynQ8KUgN2wYkK",
-    (3,7,22): "https://drive.google.com/uc?export=download&id=1dM0z8LpAgNZEO2bViZXiJBQssG1MmFZh",
-    (9,3,21): "https://drive.google.com/uc?export=download&id=15pb7irKooMODIvkGacYGNQbGgngdp_w-",
-    (21,7,13): "https://drive.google.com/uc?export=download&id=1lPwcqfBzC9gUNdC_10QYPavb3v3N-YIS",
-    (18,6,15): "https://drive.google.com/uc?export=download&id=1PWq5Vf6nBrL0eZPWXJa4SmLHsdbJIoKc",
-    (6,20,14): "https://drive.google.com/uc?export=download&id=1kugwosiU6g31pPujfCZfSo9WGDouzIJ6",
-    (21,10,7): "https://drive.google.com/uc?export=download&id=1vl2gBjs_jQBDHakFJBsHr4uU7OaGsPnn",
-    (3,13,10): "https://drive.google.com/uc?export=download&id=10_7IQ-bHmJnmmzYLwpF06NDKlRhavJUV",
-    (12,18,3): "https://drive.google.com/uc?export=download&id=1e1xcWuo1uYHDLYGJGkzhP1niun92kUUP",
-    (18,3,12): "https://drive.google.com/uc?export=download&id=1e1xcWuo1uYHDLYGJGkzhP1niun92kUUP",
-    (6,14,8): "https://drive.google.com/uc?export=download&id=1WC9HbCl6PfDasDX1uYM6qcF7nvFO8JcS",
+    (18,6,6): "https://drive.google.com/uc?export=download&id=10R1PoK8lQbcP…",
+    (9,9,18): "https://drive.google.com/uc?export=download&id=1QaMYUJv--n8i…",
+    (9,18,9): "https://drive.google.com/uc?export=download&id=1uRuiDM-csTgk…",
+    (18,9,9): "https://drive.google.com/uc?export=download&id=10kDSS349TSu9…",
+    (6,5,17): "https://drive.google.com/uc?export=download&id=1IOKcMbpaRniL…",
+    (15,20,5): "https://drive.google.com/uc?export=download&id=1t3mCNby-NCCB…",
+    (15,5,8): "https://drive.google.com/uc?export=download&id=161NMgmh9KDcr…",
+    (3,9,12): "https://drive.google.com/uc?export=download&id=1w69XCIBm3u6X…",
+    (3,12,9): "https://drive.google.com/uc?export=download&id=1w69XCIBm3u6X…",
+    (9,12,3): "https://drive.google.com/uc?export=download&id=1w69XCIBm3u6X…",
+    (15,8,11): "https://drive.google.com/uc?export=download&id=14eTveJvncg3F…",
+    (9,15,6): "https://drive.google.com/uc?export=download&id=18wj_PCzN7ZEa…",
+    (6,17,11): "https://drive.google.com/uc?export=download&id=1krx7t8o2S8cF…",
+    (12,19,7): "https://drive.google.com/uc?export=download&id=1RYUBW4pCeSms…",
+    (21,4,10): "https://drive.google.com/uc?export=download&id=1O27XG5pSIcGb…",
+    (12,16,4): "https://drive.google.com/uc?export=download&id=12EhO882TN6FF…",
+    (3,22,19): "https://drive.google.com/uc?export=download&id=1BBgsTpA_twkh…",
+    (21,10,16): "https://drive.google.com/uc?export=download&id=1unFYU8JlQPhY…",
+    (6,8,20): "https://drive.google.com/uc?export=download&id=1SdzrR0vieHPZ…",
+    (3,7,22): "https://drive.google.com/uc?export=download&id=1dM0z8LpAgNZE…",
+    (9,3,21): "https://drive.google.com/uc?export=download&id=15pb7irKooMOD…",
+    (21,7,13): "https://drive.google.com/uc?export=download&id=1lPwcqfBzC9gU…",
+    (18,6,15): "https://drive.google.com/uc?export=download&id=1PWq5Vf6nBrL0…",
+    (6,20,14): "https://drive.google.com/uc?export=download&id=1kugwosiU6g31…",
+    (21,10,7): "https://drive.google.com/uc?export=download&id=1vl2gBjs_jQBD…",
+    (3,13,10): "https://drive.google.com/uc?export=download&id=10_7IQ-bHmJnm…",
+    (12,18,3): "https://drive.google.com/uc?export=download&id=1e1xcWuo1uYHD…",
+    (18,3,12): "https://drive.google.com/uc?export=download&id=1e1xcWuo1uYHD…",
+    (6,14,8): "https://drive.google.com/uc?export=download&id=1WC9HbCl6PfDa…",
 }
 
 # ——— кнопки ———
@@ -486,28 +486,30 @@ async def handle_date(message: Message):
 
     tail_triplet = calc_tail(day, month, year)
     description = describe_tail(tail_triplet)
+    detailed_text = DETAILED_DESCRIPTIONS.get(tail_triplet, "Подробное описание пока недоступно.")
 
-    # Кнопка "Подробное описание"
-    detailed_button = InlineKeyboardMarkup(
+    # Кнопка "Читать полностью" (открыть PDF в браузере)
+    read_button = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="📖 Подробное описание", callback_data=f"detail_{tail_triplet}")]
+            [InlineKeyboardButton(text="📖 Читать полностью", url=PDF_LINKS.get(tail_triplet, "#"))]
         ]
     )
 
     # Кнопка "Скачать PDF"
-    pdf_button = InlineKeyboardMarkup(
+    download_button = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="📥 Скачать подробное описание", callback_data=f"pdf_{tail_triplet}")]
+            [InlineKeyboardButton(text="📥 Скачать PDF", url=PDF_LINKS.get(tail_triplet, "#"))]
         ]
     )
 
+    # Отправляем результат + подробное описание сразу
     await message.answer(
         f"🔮 <b>Твой кармический хвост:</b> {tail_triplet[0]}-{tail_triplet[1]}-{tail_triplet[2]}\n"
         f"📌 {description}\n\n"
-        f"👉 Подпишись на канал: {CHANNEL_LINK}",
-        reply_markup=detailed_button
+        f"{detailed_text}",
+        reply_markup=read_button
     )
-    await message.answer("📥 <b>Скачать подробное описание</b>", reply_markup=pdf_button)
+    await message.answer("📥 <b>Скачать PDF</b>", reply_markup=download_button)
 
 @dp.message(F.text == "ℹ️ О проекте")
 async def about(message: Message):
@@ -516,56 +518,6 @@ async def about(message: Message):
         "Разработан с любовью для тех, кто ищет глубину, смысл и магию в жизни.\n\n"
         f"Канал: <a href='{CHANNEL_LINK}'>@Master_Mystic</a>"
     )
-
-# ——— обработка кнопки "Подробное описание" ———
-@dp.callback_query(F.data.startswith("detail_"))
-async def show_detailed_description(callback):
-    try:
-        data = callback.data.replace("detail_", "")
-        cleaned = data.replace("(", "").replace(")", "")
-        if ", " in cleaned:
-            M, N, D = map(int, cleaned.split(", "))
-        elif "-" in cleaned:
-            M, N, D = map(int, cleaned.split("-"))
-        else:
-            M, N, D = map(int, cleaned.split())
-        triplet = (M, N, D)
-    except Exception as e:
-        await callback.answer("❌ Ошибка при обработке данных.")
-        return
-
-    detailed = DETAILED_DESCRIPTIONS.get(triplet, "Подробное описание пока недоступно.")
-    await callback.message.answer(detailed)
-    await callback.answer()
-
-# ——— обработка кнопки "Скачать PDF" ———
-@dp.callback_query(F.data.startswith("pdf_"))
-async def send_pdf(callback):
-    try:
-        data = callback.data.replace("pdf_", "")
-        cleaned = data.replace("(", "").replace(")", "")
-        if ", " in cleaned:
-            M, N, D = map(int, cleaned.split(", "))
-        elif "-" in cleaned:
-            M, N, D = map(int, cleaned.split("-"))
-        else:
-            M, N, D = map(int, cleaned.split())
-        triplet = (M, N, D)
-    except Exception as e:
-        await callback.answer("❌ Ошибка при обработке данных.")
-        return
-
-    pdf_url = PDF_LINKS.get(triplet)
-    if pdf_url:
-        await callback.message.answer(
-            f"📄 Вот твой персональный PDF:",
-            reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-                [InlineKeyboardButton(text="⬇️ Скачать PDF", url=pdf_url)]
-            ])
-        )
-        await callback.answer()
-    else:
-        await callback.answer("PDF для этого хвоста пока недоступен.")
 
 # ——— запуск вебхука ———
 async def main():
@@ -583,5 +535,4 @@ async def main():
         await runner.cleanup()
 
 if __name__ == "__main__":
-
     asyncio.run(main())
