@@ -420,7 +420,7 @@ PDF_LINKS = {
     (3,13,10): "https://drive.google.com/file/d/10_7IQ-bHmJnmmzYLwpF06NDKlRhavJUV/view?usp=drive_link",
     (12,18,3): "https://drive.google.com/file/d/1e1xcWuo1uYHDLYGJGkzhP1niun92kUUP/view?usp=drive_link",
     (18,3,12): "https://drive.google.com/file/d/1e1xcWuo1uYHDLYGJGkzhP1niun92kUUP/view?usp=drive_link",
-    (6,14,8): "https://drive.google.com/file/d/1SdzrR0vieHPZsPI4oxAynQ8KUgN2wYkK/view?usp=drive_link",
+    (6,14,8): "https://drive.google.com/file/d/1WC9HbCl6PfDasDX1uYM6qcF7nvFO8JcS/view?usp=drive_link",
 }
 
 # ——— кнопки ———
@@ -537,3 +537,4 @@ async def main():
 if __name__ == "__main__":
 
     asyncio.run(main())
+
