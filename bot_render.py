@@ -2,7 +2,7 @@ import os
 import asyncio
 from aiogram import Bot, Dispatcher, F
 from aiogram.client.default import DefaultBotProperties
-from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
+from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 from aiogram.filters import Command
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler
 from aiohttp import web
@@ -10,7 +10,7 @@ from aiohttp import web
 # 🔐 Переменные окружения
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHANNEL_ID = "@Master_Mystic"
-CHANNEL_LINK = "https://t.me/Master_Mystic"
+CHANNEL_LINK = "https://t.me/Master_Mystic "
 
 if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN не установлен в переменных окружения")
@@ -439,12 +439,6 @@ check_sub_button = InlineKeyboardMarkup(
     ]
 )
 
-# Клавиатура с кнопкой "Назад"
-back_keyboard = ReplyKeyboardMarkup(
-    keyboard=[[KeyboardButton(text="Назад")]],
-    resize_keyboard=True
-)
-
 # ——— команда /start ———
 @dp.message(Command("start"))
 async def start(message: Message):
@@ -479,39 +473,16 @@ async def handle_check_sub(callback):
 
 @dp.message(F.text == "Рассчитать кармический хвост")
 async def ask_for_date(message: Message):
-    await message.answer(
-        "Введите дату рождения в формате <b>ДД.ММ.ГГГГ</b> (например, 15.04.1990):",
-        reply_markup=back_keyboard # Показываем клавиатуру с кнопкой "Назад"
-    )
-
-# Обработчик кнопки "Назад"
-@dp.message(F.text == "Назад")
-async def handle_go_back(message: Message):
-    # Убираем клавиатуру "Назад" и возвращаем главное меню
-    await message.answer("Выбери действие:", reply_markup=keyboard)
-
-# Обработчик некорректного текстового ввода (включая неправильный формат даты)
-# Должен идти ПОСЛЕ более специфичных обработчиков, включая handle_date
-@dp.message(F.text)
-async def handle_invalid_input(message: Message):
-    # Отправляем сообщение об ошибке и снова предлагаем ввести дату или вернуться
-    await message.answer(
-        "⚠️ Пожалуйста, введите дату рождения в формате <b>ДД.ММ.ГГГГ</b> (например, 15.04.1990) "
-        "или нажмите кнопку <b>Назад</b>, чтобы вернуться в главное меню.",
-        reply_markup=back_keyboard # Показываем клавиатуру с кнопкой "Назад" снова
-    )
+    await message.answer("Введите дату: <b>ДД.ММ.ГГГГ</b>")
 
 @dp.message(F.text.regexp(r"^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(\d{4})$"))
 async def handle_date(message: Message):
     try:
         day, month, year = map(int, message.text.split("."))
     except:
-        # Это маловероятно сработает из-за регулярки, но на всякий случай
-        await message.reply("⚠️ Ошибка обработки даты. Попробуйте снова.", reply_markup=back_keyboard)
         return
-
     if not (1 <= day <= 31) or not (1 <= month <= 12) or year < 1900:
-        await message.reply("⚠️ Введите корректную дату.", reply_markup=back_keyboard)
+        await message.reply("⚠️ Введите корректную дату.")
         return
 
     tail_triplet = calc_tail(day, month, year)
@@ -532,8 +503,7 @@ async def handle_date(message: Message):
         ]
     )
 
-    # Отправляем результат + подробное описание
-    # После успешного расчёта убираем клавиатуру "Назад" и возвращаем в главное меню
+    # Отправляем результат + подробное описание сразу
     await message.answer(
         f"🔮 <b>Твой кармический хвост:</b> {tail_triplet[0]}-{tail_triplet[1]}-{tail_triplet[2]}\n"
         f"📌 {description}\n\n"
@@ -541,17 +511,13 @@ async def handle_date(message: Message):
         reply_markup=read_button
     )
     await message.answer("📥", reply_markup=download_button)
-    # Отправляем сообщение с главным меню, убирая клавиатуру "Назад"
-    await message.answer("Выбери действие:", reply_markup=keyboard)
-
 
 @dp.message(F.text == "О проекте")
 async def about(message: Message):
     await message.answer(
         "🔮 <b>Master Mystic</b>\n\n"
         "Разработан с любовью для тех, кто ищет глубину, смысл и магию в жизни.\n\n"
-        f"Канал: <a href='{CHANNEL_LINK}'>@Master_Mystic</a>",
-        reply_markup=keyboard # Убедимся, что главное меню показывается
+        f"Канал: <a href='{CHANNEL_LINK}'>@Master_Mystic</a>"
     )
 
 @dp.message(F.text == "Сделать полный анализ")
@@ -559,14 +525,14 @@ async def full_analysis(message: Message):
     # Сообщение с ценой и кнопками
     analysis_button = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="✅ Продолжить", url="https://t.me/Mattrehka")],
+            [InlineKeyboardButton(text="✅ Продолжить", url="https://t.me/Mattrehka ")],
             [InlineKeyboardButton(text="⏸️ Я подумаю", callback_data="think")]
         ]
     )
     await message.answer(
         "<b>Полный анализ по вашей Матрице Судьбы будет стоить 1000 рублей.</b>\n\n"
-        "🔹 Вы будете перенаправлены ко мне в личные сообщения.\n"
-        "🔹 Я проведу глубокий разбор вашей судьбы, кармы и путей развития.",
+        "🔹 Информация о вас будет передана мне в личные сообщения.\n"
+        "🔹 Мы проведём глубокий разбор вашей судьбы, кармы и путей развития.",
         reply_markup=analysis_button
     )
 
@@ -574,8 +540,6 @@ async def full_analysis(message: Message):
 async def think_callback(callback):
     # Ответ пользователю (без уведомления тебе)
     await callback.answer("💡 Хорошо, подумай. Возвращайся, когда будешь готов к глубокому анализу!", show_alert=True)
-    # Также можно отправить сообщение в чат, если нужно
-    # await callback.message.answer("Выбери действие:", reply_markup=keyboard)
 
 # ——— запуск вебхука ———
 async def main():
@@ -594,4 +558,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-
