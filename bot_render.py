@@ -10,7 +10,7 @@ from aiohttp import web
 # 🔐 Переменные окружения
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHANNEL_ID = "@Master_Mystic"
-CHANNEL_LINK = "https://t.me/Master_Mystic "
+CHANNEL_LINK = "https://t.me/Master_Mystic"
 
 if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN не установлен в переменных окружения")
@@ -391,36 +391,37 @@ DETAILED_DESCRIPTIONS = {
 }
 
 # ——— ссылки на PDF-файлы ———
+# Исправляем: убираем ... и пробелы
 PDF_LINKS = {
-    (18,6,6): "https://drive.google.com/file/d/10R1PoK8lQbcP5fEVVXecMoLymi4 …/view?usp=sharing",
-    (9,9,18): "https://drive.google.com/file/d/1QaMYUJv--n8iLwseG8_MAgz79dg …/view?usp=sharing",
-    (9,18,9): "https://drive.google.com/file/d/1uRuiDM-csTgk6SGweSkhbGT20yf …/view?usp=sharing",
-    (18,9,9): "https://drive.google.com/file/d/10kDSS349TSu9eYaiCo61uWVjx11 …/view?usp=sharing",
-    (6,5,17): "https://drive.google.com/file/d/1IOKcMbpaRniLBmPL8s-anCwi1eB …/view?usp=sharing",
-    (15,20,5): "https://drive.google.com/file/d/1t3mCNby-NCCBE4Pz_EFbuvXsJim …/view?usp=sharing",
-    (15,5,8): "https://drive.google.com/file/d/161NMgmh9KDcrK0og17JrHBSloSN …/view?usp=sharing",
-    (3,9,12): "https://drive.google.com/file/d/1w69XCIBm3u6XVTXJF893iL3nV_C …/view?usp=sharing",
-    (3,12,9): "https://drive.google.com/file/d/1w69XCIBm3u6XVTXJF893iL3nV_C …/view?usp=sharing",
-    (9,12,3): "https://drive.google.com/file/d/1w69XCIBm3u6XVTXJF893iL3nV_C …/view?usp=sharing",
-    (15,8,11): "https://drive.google.com/file/d/14eTveJvncg3FRsOlGqBuiDD1Vd8 …/view?usp=sharing",
-    (9,15,6): "https://drive.google.com/file/d/18wj_PCzN7ZEaUvfmGiDW2AttFdY …/view?usp=sharing",
-    (6,17,11): "https://drive.google.com/file/d/1krx7t8o2S8cFdp58HES9lyblQq7 …/view?usp=sharing",
-    (12,19,7): "https://drive.google.com/file/d/1RYUBW4pCeSmsXwcjjTLiWdXHWP1 …/view?usp=sharing",
-    (21,4,10): "https://drive.google.com/file/d/1O27XG5pSIcGbfsNSQILNTbNVdXx …/view?usp=sharing",
-    (12,16,4): "https://drive.google.com/file/d/12EhO882TN6FFZNkV1LV18Gzy6SG …/view?usp=sharing",
-    (3,22,19): "https://drive.google.com/file/d/1BBgsTpA_twkhsgAly9i3DtR6fse …/view?usp=sharing",
-    (21,10,16): "https://drive.google.com/file/d/1unFYU8JlQPhYPmFgLlaRpDwX49T …/view?usp=sharing",
-    (6,8,20): "https://drive.google.com/file/d/1SdzrR0vieHPZsPI4oxAynQ8KUgN …/view?usp=sharing",
-    (3,7,22): "https://drive.google.com/file/d/1dM0z8LpAgNZEO2bViZXiJBQssG1 …/view?usp=sharing",
-    (9,3,21): "https://drive.google.com/file/d/15pb7irKooMODIvkGacYGNQbGgng …/view?usp=sharing",
-    (21,7,13): "https://drive.google.com/file/d/1lPwcqfBzC9gUNdC_10QYPavb3v3 …/view?usp=sharing",
-    (18,6,15): "https://drive.google.com/file/d/1PWq5Vf6nBrL0eZPWXJa4SmLHsdb …/view?usp=sharing",
-    (6,20,14): "https://drive.google.com/file/d/1kugwosiU6g31pPujfCZfSo9WGDo …/view?usp=sharing",
-    (21,10,7): "https://drive.google.com/file/d/1vl2gBjs_jQBDHakFJBsHr4uU7Oa …/view?usp=sharing",
-    (3,13,10): "https://drive.google.com/file/d/10_7IQ-bHmJnmmzYLwpF06NDKlRh …/view?usp=sharing",
-    (12,18,3): "https://drive.google.com/file/d/1e1xcWuo1uYHDLYGJGkzhP1niun9 …/view?usp=sharing",
-    (18,3,12): "https://drive.google.com/file/d/1e1xcWuo1uYHDLYGJGkzhP1niun9 …/view?usp=sharing",
-    (6,14,8): "https://drive.google.com/file/d/1WC9HbCl6PfDasDX1uYM6qcF7nvF …/view?usp=sharing",
+    (18,6,6): "https://drive.google.com/file/d/10R1PoK8lQbcP5fEVVXecMoLymi4/view?usp=sharing",
+    (9,9,18): "https://drive.google.com/file/d/1QaMYUJv--n8iLwseG8_MAgz79dg/view?usp=sharing",
+    (9,18,9): "https://drive.google.com/file/d/1uRuiDM-csTgk6SGweSkhbGT20yf/view?usp=sharing",
+    (18,9,9): "https://drive.google.com/file/d/10kDSS349TSu9eYaiCo61uWVjx11/view?usp=sharing",
+    (6,5,17): "https://drive.google.com/file/d/1IOKcMbpaRniLBmPL8s-anCwi1eB/view?usp=sharing",
+    (15,20,5): "https://drive.google.com/file/d/1t3mCNby-NCCBE4Pz_EFbuvXsJim/view?usp=sharing",
+    (15,5,8): "https://drive.google.com/file/d/161NMgmh9KDcrK0og17JrHBSloSN/view?usp=sharing",
+    (3,9,12): "https://drive.google.com/file/d/1w69XCIBm3u6XVTXJF893iL3nV_C/view?usp=sharing",
+    (3,12,9): "https://drive.google.com/file/d/1w69XCIBm3u6XVTXJF893iL3nV_C/view?usp=sharing",
+    (9,12,3): "https://drive.google.com/file/d/1w69XCIBm3u6XVTXJF893iL3nV_C/view?usp=sharing",
+    (15,8,11): "https://drive.google.com/file/d/14eTveJvncg3FRsOlGqBuiDD1Vd8/view?usp=sharing",
+    (9,15,6): "https://drive.google.com/file/d/18wj_PCzN7ZEaUvfmGiDW2AttFdY/view?usp=sharing",
+    (6,17,11): "https://drive.google.com/file/d/1krx7t8o2S8cFdp58HES9lyblQq7/view?usp=sharing",
+    (12,19,7): "https://drive.google.com/file/d/1RYUBW4pCeSmsXwcjjTLiWdXHWP1/view?usp=sharing",
+    (21,4,10): "https://drive.google.com/file/d/1O27XG5pSIcGbfsNSQILNTbNVdXx/view?usp=sharing",
+    (12,16,4): "https://drive.google.com/file/d/12EhO882TN6FFZNkV1LV18Gzy6SG/view?usp=sharing",
+    (3,22,19): "https://drive.google.com/file/d/1BBgsTpA_twkhsgAly9i3DtR6fse/view?usp=sharing",
+    (21,10,16): "https://drive.google.com/file/d/1unFYU8JlQPhYPmFgLlaRpDwX49T/view?usp=sharing",
+    (6,8,20): "https://drive.google.com/file/d/1SdzrR0vieHPZsPI4oxAynQ8KUgN/view?usp=sharing",
+    (3,7,22): "https://drive.google.com/file/d/1dM0z8LpAgNZEO2bViZXiJBQssG1/view?usp=sharing",
+    (9,3,21): "https://drive.google.com/file/d/15pb7irKooMODIvkGacYGNQbGgng/view?usp=sharing",
+    (21,7,13): "https://drive.google.com/file/d/1lPwcqfBzC9gUNdC_10QYPavb3v3/view?usp=sharing",
+    (18,6,15): "https://drive.google.com/file/d/1PWq5Vf6nBrL0eZPWXJa4SmLHsdb/view?usp=sharing",
+    (6,20,14): "https://drive.google.com/file/d/1kugwosiU6g31pPujfCZfSo9WGDo/view?usp=sharing",
+    (21,10,7): "https://drive.google.com/file/d/1vl2gBjs_jQBDHakFJBsHr4uU7Oa/view?usp=sharing",
+    (3,13,10): "https://drive.google.com/file/d/10_7IQ-bHmJnmmzYLwpF06NDKlRh/view?usp=sharing",
+    (12,18,3): "https://drive.google.com/file/d/1e1xcWuo1uYHDLYGJGkzhP1niun9/view?usp=sharing",
+    (18,3,12): "https://drive.google.com/file/d/1e1xcWuo1uYHDLYGJGkzhP1niun9/view?usp=sharing",
+    (6,14,8): "https://drive.google.com/file/d/1WC9HbCl6PfDasDX1uYM6qcF7nvF/view?usp=sharing",
 }
 
 # ——— кнопки ———
@@ -475,35 +476,45 @@ async def handle_check_sub(callback):
 async def ask_for_date(message: Message):
     await message.answer("Введите дату: <b>ДД.ММ.ГГГГ</b>")
 
+# ✅ ОСНОВНОЙ ИСПРАВЛЕННЫЙ ОБРАБОТЧИК ДАТЫ
 @dp.message(F.text.regexp(r"^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(\d{4})$"))
 async def handle_date(message: Message):
     try:
         day, month, year = map(int, message.text.split("."))
-    except:
+    except Exception:
+        await message.reply("⚠️ Ошибка обработки даты. Введите в формате ДД.ММ.ГГГГ.")
         return
+
     if not (1 <= day <= 31) or not (1 <= month <= 12) or year < 1900:
         await message.reply("⚠️ Введите корректную дату.")
+        return
+
+    # Проверка существования даты
+    try:
+        from datetime import datetime
+        datetime(year, month, day)
+    except ValueError:
+        await message.reply("❌ Такой даты не существует.")
         return
 
     tail_triplet = calc_tail(day, month, year)
     description = describe_tail(tail_triplet)
     detailed_text = DETAILED_DESCRIPTIONS.get(tail_triplet, "Подробное описание пока недоступно.")
 
-    # Кнопка "Читать полностью" (открыть PDF в браузере)
+    # Кнопка "Читать полностью"
     read_button = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="📖 Читать полностью", url=PDF_LINKS.get(tail_triplet, "#"))]
         ]
     )
 
-    # Кнопка "Скачать PDF" — только кнопка, без текста
+    # Кнопка "Скачать PDF" — теперь с текстом
     download_button = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="📥", url=PDF_LINKS.get(tail_triplet, "#"))]
+            [InlineKeyboardButton(text="📥 Скачать PDF", url=PDF_LINKS.get(tail_triplet, "#"))]
         ]
     )
 
-    # Отправляем результат + подробное описание сразу
     await message.answer(
         f"🔮 <b>Твой кармический хвост:</b> {tail_triplet[0]}-{tail_triplet[1]}-{tail_triplet[2]}\n"
         f"📌 {description}\n\n"
@@ -512,6 +523,7 @@ async def handle_date(message: Message):
     )
     await message.answer("📥", reply_markup=download_button)
 
+# ——— Остальные команды ———
 @dp.message(F.text == "О проекте")
 async def about(message: Message):
     await message.answer(
@@ -522,10 +534,9 @@ async def about(message: Message):
 
 @dp.message(F.text == "Сделать полный анализ")
 async def full_analysis(message: Message):
-    # Сообщение с ценой и кнопками
     analysis_button = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="✅ Продолжить", url="https://t.me/Mattrehka ")],
+            [InlineKeyboardButton(text="✅ Продолжить", url="https://t.me/Mattrehka")],
             [InlineKeyboardButton(text="⏸️ Я подумаю", callback_data="think")]
         ]
     )
@@ -538,7 +549,6 @@ async def full_analysis(message: Message):
 
 @dp.callback_query(F.data == "think")
 async def think_callback(callback):
-    # Ответ пользователю (без уведомления тебе)
     await callback.answer("💡 Хорошо, подумай. Возвращайся, когда будешь готов к глубокому анализу!", show_alert=True)
 
 # ——— запуск вебхука ———
@@ -558,4 +568,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-
