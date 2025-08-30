@@ -2,7 +2,7 @@ import os
 import asyncio
 from aiogram import Bot, Dispatcher, F
 from aiogram.client.default import DefaultBotProperties
-from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
+from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 from aiogram.filters import Command
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler
 from aiohttp import web
@@ -10,7 +10,7 @@ from aiohttp import web
 # 🔐 Переменные окружения
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHANNEL_ID = "@Master_Mystic"
-CHANNEL_LINK = "https://t.me/Master_Mystic"
+CHANNEL_LINK = "https://t.me/Master_Mystic "
 
 if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN не установлен в переменных окружения")
@@ -362,7 +362,7 @@ DETAILED_DESCRIPTIONS = {
         "📌 <b>Задачи этого хвоста:</b>\n"
         "• Прими болезнь, если она пришла.\n"
         "• Помогай другим принимать страдания.\n"
-        "• Не борься с реальностью — и тогда она может измениться."
+        "• Не борись с реальностью — и тогда она может измениться."
     ),
     (18,3,12): (
         "🔮 <b>Хвост 18-3-12: Физические страдания</b>\n\n"
@@ -373,7 +373,7 @@ DETAILED_DESCRIPTIONS = {
         "📌 <b>Задачи этого хвоста:</b>\n"
         "• Прими болезнь, если она пришла.\n"
         "• Помогай другим принимать страдания.\n"
-        "• Не борься с реальностью — и тогда она может измениться."
+        "• Не борись с реальностью — и тогда она может измениться."
     ),
     (6,14,8): (
         "🔮 <b>Хвост 6-14-8: Диктатор</b>\n\n"
@@ -392,41 +392,42 @@ DETAILED_DESCRIPTIONS = {
 
 # ——— ссылки на PDF-файлы ———
 PDF_LINKS = {
-    (18,6,6): "https://drive.google.com/file/d/10R1PoK8lQbcP5fEVVXecMoLymi4/view?usp=sharing",
-    (9,9,18): "https://drive.google.com/file/d/1QaMYUJv--n8iLwseG8_MAgz79dg/view?usp=sharing",
-    (9,18,9): "https://drive.google.com/file/d/1uRuiDM-csTgk6SGweSkhbGT20yf/view?usp=sharing",
-    (18,9,9): "https://drive.google.com/file/d/10kDSS349TSu9eYaiCo61uWVjx11/view?usp=sharing",
-    (6,5,17): "https://drive.google.com/file/d/1IOKcMbpaRniLBmPL8s-anCwi1eB/view?usp=sharing",
-    (15,20,5): "https://drive.google.com/file/d/1t3mCNby-NCCBE4Pz_EFbuvXsJim/view?usp=sharing",
-    (15,5,8): "https://drive.google.com/file/d/161NMgmh9KDcrK0og17JrHBSloSN/view?usp=sharing",
-    (3,9,12): "https://drive.google.com/file/d/1w69XCIBm3u6XVTXJF893iL3nV_C/view?usp=sharing",
-    (3,12,9): "https://drive.google.com/file/d/1w69XCIBm3u6XVTXJF893iL3nV_C/view?usp=sharing",
-    (9,12,3): "https://drive.google.com/file/d/1w69XCIBm3u6XVTXJF893iL3nV_C/view?usp=sharing",
-    (15,8,11): "https://drive.google.com/file/d/14eTveJvncg3FRsOlGqBuiDD1Vd8/view?usp=sharing",
-    (9,15,6): "https://drive.google.com/file/d/18wj_PCzN7ZEaUvfmGiDW2AttFdY/view?usp=sharing",
-    (6,17,11): "https://drive.google.com/file/d/1krx7t8o2S8cFdp58HES9lyblQq7/view?usp=sharing",
-    (12,19,7): "https://drive.google.com/file/d/1RYUBW4pCeSmsXwcjjTLiWdXHWP1/view?usp=sharing",
-    (21,4,10): "https://drive.google.com/file/d/1O27XG5pSIcGbfsNSQILNTbNVdXx/view?usp=sharing",
-    (12,16,4): "https://drive.google.com/file/d/12EhO882TN6FFZNkV1LV18Gzy6SG/view?usp=sharing",
-    (3,22,19): "https://drive.google.com/file/d/1BBgsTpA_twkhsgAly9i3DtR6fse/view?usp=sharing",
-    (21,10,16): "https://drive.google.com/file/d/1unFYU8JlQPhYPmFgLlaRpDwX49T/view?usp=sharing",
-    (6,8,20): "https://drive.google.com/file/d/1SdzrR0vieHPZsPI4oxAynQ8KUgN/view?usp=sharing",
-    (3,7,22): "https://drive.google.com/file/d/1dM0z8LpAgNZEO2bViZXiJBQssG1/view?usp=sharing",
-    (9,3,21): "https://drive.google.com/file/d/15pb7irKooMODIvkGacYGNQbGgng/view?usp=sharing",
-    (21,7,13): "https://drive.google.com/file/d/1lPwcqfBzC9gUNdC_10QYPavb3v3/view?usp=sharing",
-    (18,6,15): "https://drive.google.com/file/d/1PWq5Vf6nBrL0eZPWXJa4SmLHsdb/view?usp=sharing",
-    (6,20,14): "https://drive.google.com/file/d/1kugwosiU6g31pPujfCZfSo9WGDo/view?usp=sharing",
-    (21,10,7): "https://drive.google.com/file/d/1vl2gBjs_jQBDHakFJBsHr4uU7Oa/view?usp=sharing",
-    (3,13,10): "https://drive.google.com/file/d/10_7IQ-bHmJnmmzYLwpF06NDKlRh/view?usp=sharing",
-    (12,18,3): "https://drive.google.com/file/d/1e1xcWuo1uYHDLYGJGkzhP1niun9/view?usp=sharing",
-    (18,3,12): "https://drive.google.com/file/d/1e1xcWuo1uYHDLYGJGkzhP1niun9/view?usp=sharing",
-    (6,14,8): "https://drive.google.com/file/d/1WC9HbCl6PfDasDX1uYM6qcF7nvF/view?usp=sharing",
+    (18,6,6): "https://drive.google.com/file/d/10R1PoK8lQbcP5fEVVXecMoLymi4 …/view?usp=sharing",
+    (9,9,18): "https://drive.google.com/file/d/1QaMYUJv--n8iLwseG8_MAgz79dg …/view?usp=sharing",
+    (9,18,9): "https://drive.google.com/file/d/1uRuiDM-csTgk6SGweSkhbGT20yf …/view?usp=sharing",
+    (18,9,9): "https://drive.google.com/file/d/10kDSS349TSu9eYaiCo61uWVjx11 …/view?usp=sharing",
+    (6,5,17): "https://drive.google.com/file/d/1IOKcMbpaRniLBmPL8s-anCwi1eB …/view?usp=sharing",
+    (15,20,5): "https://drive.google.com/file/d/1t3mCNby-NCCBE4Pz_EFbuvXsJim …/view?usp=sharing",
+    (15,5,8): "https://drive.google.com/file/d/161NMgmh9KDcrK0og17JrHBSloSN …/view?usp=sharing",
+    (3,9,12): "https://drive.google.com/file/d/1w69XCIBm3u6XVTXJF893iL3nV_C …/view?usp=sharing",
+    (3,12,9): "https://drive.google.com/file/d/1w69XCIBm3u6XVTXJF893iL3nV_C …/view?usp=sharing",
+    (9,12,3): "https://drive.google.com/file/d/1w69XCIBm3u6XVTXJF893iL3nV_C …/view?usp=sharing",
+    (15,8,11): "https://drive.google.com/file/d/14eTveJvncg3FRsOlGqBuiDD1Vd8 …/view?usp=sharing",
+    (9,15,6): "https://drive.google.com/file/d/18wj_PCzN7ZEaUvfmGiDW2AttFdY …/view?usp=sharing",
+    (6,17,11): "https://drive.google.com/file/d/1krx7t8o2S8cFdp58HES9lyblQq7 …/view?usp=sharing",
+    (12,19,7): "https://drive.google.com/file/d/1RYUBW4pCeSmsXwcjjTLiWdXHWP1 …/view?usp=sharing",
+    (21,4,10): "https://drive.google.com/file/d/1O27XG5pSIcGbfsNSQILNTbNVdXx …/view?usp=sharing",
+    (12,16,4): "https://drive.google.com/file/d/12EhO882TN6FFZNkV1LV18Gzy6SG …/view?usp=sharing",
+    (3,22,19): "https://drive.google.com/file/d/1BBgsTpA_twkhsgAly9i3DtR6fse …/view?usp=sharing",
+    (21,10,16): "https://drive.google.com/file/d/1unFYU8JlQPhYPmFgLlaRpDwX49T …/view?usp=sharing",
+    (6,8,20): "https://drive.google.com/file/d/1SdzrR0vieHPZsPI4oxAynQ8KUgN …/view?usp=sharing",
+    (3,7,22): "https://drive.google.com/file/d/1dM0z8LpAgNZEO2bViZXiJBQssG1 …/view?usp=sharing",
+    (9,3,21): "https://drive.google.com/file/d/15pb7irKooMODIvkGacYGNQbGgng …/view?usp=sharing",
+    (21,7,13): "https://drive.google.com/file/d/1lPwcqfBzC9gUNdC_10QYPavb3v3 …/view?usp=sharing",
+    (18,6,15): "https://drive.google.com/file/d/1PWq5Vf6nBrL0eZPWXJa4SmLHsdb …/view?usp=sharing",
+    (6,20,14): "https://drive.google.com/file/d/1kugwosiU6g31pPujfCZfSo9WGDo …/view?usp=sharing",
+    (21,10,7): "https://drive.google.com/file/d/1vl2gBjs_jQBDHakFJBsHr4uU7Oa …/view?usp=sharing",
+    (3,13,10): "https://drive.google.com/file/d/10_7IQ-bHmJnmmzYLwpF06NDKlRh …/view?usp=sharing",
+    (12,18,3): "https://drive.google.com/file/d/1e1xcWuo1uYHDLYGJGkzhP1niun9 …/view?usp=sharing",
+    (18,3,12): "https://drive.google.com/file/d/1e1xcWuo1uYHDLYGJGkzhP1niun9 …/view?usp=sharing",
+    (6,14,8): "https://drive.google.com/file/d/1WC9HbCl6PfDasDX1uYM6qcF7nvF …/view?usp=sharing",
 }
 
 # ——— кнопки ———
 keyboard = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="Рассчитать кармический хвост")],
+        [KeyboardButton(text="Сделать полный анализ")],
         [KeyboardButton(text="О проекте")]
     ],
     resize_keyboard=True
@@ -436,11 +437,6 @@ check_sub_button = InlineKeyboardMarkup(
     inline_keyboard=[
         [InlineKeyboardButton(text="✅ Проверить подписку", callback_data="check_sub")]
     ]
-)
-
-back_keyboard = ReplyKeyboardMarkup(
-    keyboard=[[KeyboardButton(text="Назад")]],
-    resize_keyboard=True
 )
 
 # ——— команда /start ———
@@ -477,114 +473,72 @@ async def handle_check_sub(callback):
 
 @dp.message(F.text == "Рассчитать кармический хвост")
 async def ask_for_date(message: Message):
-    await message.answer(
-        "Введите дату рождения в формате <b>ДД.ММ.ГГГГ</b> (например, 15.04.1990):",
-        reply_markup=back_keyboard
-    )
+    await message.answer("Введите дату: <b>ДД.ММ.ГГГГ</b>")
 
-# Обработчик кнопки "Назад"
-@dp.message(F.text == "Назад")
-async def handle_go_back(message: Message):
-    await message.answer("Выбери действие:", reply_markup=keyboard)
-
-# ——— обработчик корректной даты ———
 @dp.message(F.text.regexp(r"^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(\d{4})$"))
 async def handle_date(message: Message):
     try:
-        cleaned_text = message.text.strip()
-        parts = cleaned_text.split('.')
-        if len(parts) != 3:
-            await message.reply("⚠️ Ошибка формата даты. Пожалуйста, введите дату в формате ДД.ММ.ГГГГ.", reply_markup=back_keyboard)
-            return
+        day, month, year = map(int, message.text.split("."))
+    except:
+        return
+    if not (1 <= day <= 31) or not (1 <= month <= 12) or year < 1900:
+        await message.reply("⚠️ Введите корректную дату.")
+        return
 
-        day_str, month_str, year_str = parts[0], parts[1], parts[2]
+    tail_triplet = calc_tail(day, month, year)
+    description = describe_tail(tail_triplet)
+    detailed_text = DETAILED_DESCRIPTIONS.get(tail_triplet, "Подробное описание пока недоступно.")
 
-        if not (day_str.isdigit() and month_str.isdigit() and year_str.isdigit()):
-            await message.reply("⚠️ Ошибка формата даты. Пожалуйста, введите дату в формате ДД.ММ.ГГГГ.", reply_markup=back_keyboard)
-            return
-
-        day, month, year = int(day_str), int(month_str), int(year_str)
-
-        # Проверка диапазонов
-        if not (1 <= day <= 31) or not (1 <= month <= 12) or year < 1900:
-            await message.reply("⚠️ Введите корректную дату.", reply_markup=back_keyboard)
-            return
-
-        # Проверка на существование даты (например, 31 февраля)
-        from datetime import datetime
-        try:
-            datetime(year, month, day)
-        except ValueError:
-            await message.reply("❌ Такой даты не существует.", reply_markup=back_keyboard)
-            return
-
-        tail_triplet = calc_tail(day, month, year)
-        description = describe_tail(tail_triplet)
-        detailed_text = DETAILED_DESCRIPTIONS.get(tail_triplet, "Подробное описание пока недоступно.")
-
-        read_button = InlineKeyboardMarkup(
-            inline_keyboard=[
-                [InlineKeyboardButton(text="📖 Читать полностью", url=PDF_LINKS.get(tail_triplet, "#"))]
-            ]
-        )
-
-        download_button = InlineKeyboardMarkup(
-            inline_keyboard=[
-                [InlineKeyboardButton(text="📥 Скачать PDF", url=PDF_LINKS.get(tail_triplet, "#"))]  # Исправлено: теперь текст
-            ]
-        )
-
-        await message.answer(
-            f"🔮 <b>Твой кармический хвост:</b> {tail_triplet[0]}-{tail_triplet[1]}-{tail_triplet[2]}\n"
-            f"📌 {description}\n\n"
-            f"{detailed_text}",
-            reply_markup=read_button
-        )
-        await message.answer("📥", reply_markup=download_button)
-        await message.answer("Выбери действие:", reply_markup=keyboard)
-
-    except Exception as e:
-        print(f"Ошибка при обработке даты: {e}")
-        await message.reply("⚠️ Произошла ошибка. Попробуйте снова.", reply_markup=back_keyboard)
-
-
-# ——— обработчик некорректного текста ———
-@dp.message(F.text)
-async def handle_invalid_input(message: Message):
-    await message.answer(
-        "⚠️ Пожалуйста, введите дату рождения в формате <b>ДД.ММ.ГГГГ</b> (например, 15.04.1990) "
-        "или нажмите кнопку <b>Назад</b>, чтобы вернуться в главное меню.",
-        reply_markup=back_keyboard
+    # Кнопка "Читать полностью" (открыть PDF в браузере)
+    read_button = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="📖 Читать полностью", url=PDF_LINKS.get(tail_triplet, "#"))]
+        ]
     )
+
+    # Кнопка "Скачать PDF" — только кнопка, без текста
+    download_button = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="📥", url=PDF_LINKS.get(tail_triplet, "#"))]
+        ]
+    )
+
+    # Отправляем результат + подробное описание сразу
+    await message.answer(
+        f"🔮 <b>Твой кармический хвост:</b> {tail_triplet[0]}-{tail_triplet[1]}-{tail_triplet[2]}\n"
+        f"📌 {description}\n\n"
+        f"{detailed_text}",
+        reply_markup=read_button
+    )
+    await message.answer("📥", reply_markup=download_button)
 
 @dp.message(F.text == "О проекте")
 async def about(message: Message):
     await message.answer(
         "🔮 <b>Master Mystic</b>\n\n"
         "Разработан с любовью для тех, кто ищет глубину, смысл и магию в жизни.\n\n"
-        f"Канал: <a href='{CHANNEL_LINK}'>@Master_Mystic</a>",
-        reply_markup=keyboard
+        f"Канал: <a href='{CHANNEL_LINK}'>@Master_Mystic</a>"
     )
 
-# ——— кнопка "Сделать полный анализ" —— теперь inline-кнопка!
 @dp.message(F.text == "Сделать полный анализ")
 async def full_analysis(message: Message):
-    # Убираем кнопку из клавиатуры, потому что она больше не нужна
+    # Сообщение с ценой и кнопками
     analysis_button = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="✅ Продолжить", url="https://t.me/Mattrehka")],
+            [InlineKeyboardButton(text="✅ Продолжить", url="https://t.me/Mattrehka ")],
             [InlineKeyboardButton(text="⏸️ Я подумаю", callback_data="think")]
         ]
     )
     await message.answer(
         "<b>Полный анализ по вашей Матрице Судьбы будет стоить 1000 рублей.</b>\n\n"
-        "🔹 Вы будете перенаправлены ко мне в личные сообщения.\n"
-        "🔹 Я проведу глубокий разбор вашей судьбы, кармы и путей развития.",
+        "🔹 Информация о вас будет передана мне в личные сообщения.\n"
+        "🔹 Мы проведём глубокий разбор вашей судьбы, кармы и путей развития.",
         reply_markup=analysis_button
     )
 
 @dp.callback_query(F.data == "think")
 async def think_callback(callback):
+    # Ответ пользователю (без уведомления тебе)
     await callback.answer("💡 Хорошо, подумай. Возвращайся, когда будешь готов к глубокому анализу!", show_alert=True)
 
 # ——— запуск вебхука ———
