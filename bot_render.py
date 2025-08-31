@@ -405,7 +405,7 @@ subscribe_button = InlineKeyboardMarkup(
     ]
 )
 
-# Хранение состояний пользователей (кто нажал "ГОТОВО")
+# Хранение состояний пользователей
 waiting_for_date = set()
 
 # ——— команда /start ———
@@ -469,7 +469,6 @@ async def send_payment_info(callback):
 # ——— обработка "ГОТОВО" ———
 @dp.callback_query(F.data == "ready")
 async def send_contact(callback):
-    # Добавляем ID пользователя в список ожидающих дату
     waiting_for_date.add(callback.from_user.id)
     await callback.message.edit_text(
         "Пожалуйста, введите вашу дату рождения в формате <b>ДД.ММ.ГГГГ</b> (например, 15.04.1990):",
@@ -481,7 +480,7 @@ async def send_contact(callback):
 @dp.message(F.text)
 async def process_date(message: Message):
     if message.from_user.id not in waiting_for_date:
-        return  # Игнорируем, если пользователь не нажимал "ГОТОВО"
+        return  # Игнорируем, если не ждём дату
 
     try:
         day, month, year = map(int, message.text.split("."))
@@ -496,7 +495,7 @@ async def process_date(message: Message):
     # Убираем пользователя из ожидания
     waiting_for_date.discard(message.from_user.id)
 
-    # Отправляем дату в личные сообщения @Mattrehka
+    # Отправляем дату в @Mattrehka
     await bot.send_message(
         chat_id="@Mattrehka",
         text=f"Новый клиент: {message.from_user.full_name}\nДата рождения: {day}.{month}.{year}"
@@ -522,9 +521,9 @@ async def think_callback(callback):
 # ——— обработчик даты (для бесплатного анализа) ———
 @dp.message(F.text.regexp(r"^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(\d{4})$"))
 async def handle_date(message: Message):
-    # Проверяем, не в режиме ли он ожидания оплаты
+    # Если пользователь в режиме ожидания даты, игнорируем
     if message.from_user.id in waiting_for_date:
-        return  # Это обработает process_date
+        return
 
     try:
         day, month, year = map(int, message.text.split("."))
