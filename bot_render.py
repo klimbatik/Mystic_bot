@@ -357,7 +357,7 @@ DETAILED_DESCRIPTIONS = {
     ),
 }
 
-# ——— ссылки на PDF-файлы (исправлены лишние пробелы) ———
+# ——— ссылки на PDF-файлы ———
 PDF_LINKS = {
     (18,6,6): "https://drive.google.com/file/d/10R1PoK8lQbcP5fEVVXecMoLymi45tsGW/view?usp=drive_link",
     (9,9,18): "https://drive.google.com/file/d/1QaMYUJv--n8iLwseG8_MAgz79dggEgg6/view?usp=drive_link",
@@ -404,6 +404,9 @@ subscribe_button = InlineKeyboardMarkup(
         [InlineKeyboardButton(text="Подписаться", url="https://t.me/Master_Mystic")]
     ]
 )
+
+# Хранение состояний пользователей (кто нажал "ГОТОВО")
+waiting_for_date = set()
 
 # ——— команда /start ———
 @dp.message(Command("start"))
@@ -466,15 +469,20 @@ async def send_payment_info(callback):
 # ——— обработка "ГОТОВО" ———
 @dp.callback_query(F.data == "ready")
 async def send_contact(callback):
+    # Добавляем ID пользователя в список ожидающих дату
+    waiting_for_date.add(callback.from_user.id)
     await callback.message.edit_text(
         "Пожалуйста, введите вашу дату рождения в формате <b>ДД.ММ.ГГГГ</b> (например, 15.04.1990):",
         reply_markup=None,
         parse_mode="HTML"
     )
-    dp.message.register(process_date, F.text.regexp(r"^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(\d{4})$"))
 
-# ——— обработка ввода даты рождения ———
+# ——— обработка ввода даты после "ГОТОВО" ———
+@dp.message(F.text)
 async def process_date(message: Message):
+    if message.from_user.id not in waiting_for_date:
+        return  # Игнорируем, если пользователь не нажимал "ГОТОВО"
+
     try:
         day, month, year = map(int, message.text.split("."))
     except:
@@ -485,13 +493,16 @@ async def process_date(message: Message):
         await message.reply("⚠️ Введите корректную дату.")
         return
 
-    # Отправляем дату в ваш аккаунт
+    # Убираем пользователя из ожидания
+    waiting_for_date.discard(message.from_user.id)
+
+    # Отправляем дату в личные сообщения @Mattrehka
     await bot.send_message(
         chat_id="@Mattrehka",
         text=f"Новый клиент: {message.from_user.full_name}\nДата рождения: {day}.{month}.{year}"
     )
 
-    # Сообщение клиенту
+    # Отправляем клиенту подтверждение
     await message.answer(
         "Спасибо за доверие 🙏. В течение 24 часов я пришлю вам результат. "
         "Если у вас будут вопросы, пишите в личные сообщения <a href='https://t.me/Mattrehka'>Master Mystic</a>",
@@ -508,9 +519,13 @@ async def think_callback(callback):
         parse_mode="HTML"
     )
 
-# ——— обработчик даты ———
+# ——— обработчик даты (для бесплатного анализа) ———
 @dp.message(F.text.regexp(r"^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(\d{4})$"))
 async def handle_date(message: Message):
+    # Проверяем, не в режиме ли он ожидания оплаты
+    if message.from_user.id in waiting_for_date:
+        return  # Это обработает process_date
+
     try:
         day, month, year = map(int, message.text.split("."))
     except:
@@ -525,15 +540,13 @@ async def handle_date(message: Message):
     description = describe_tail(tail_triplet)
     detailed_text = DETAILED_DESCRIPTIONS.get(tail_triplet, "Подробное описание пока недоступно.")
 
-    # Кнопки: PDF + кнопка "Я прочитал"
     inline_keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="📖 Читать подробности", url=PDF_LINKS.get(tail_triplet, "#"))],
-            [InlineKeyboardButton(text="✅ Я прочитал — сделать полный анализ", callback_data="full_analysis")]
+            [InlineKeyboardButton(text="✅ Сделать полный анализ", callback_data="full_analysis")]
         ]
     )
 
-    # Отправляем результат
     await message.answer(
         f"🔮 <b>Твой кармический хвост:</b> {tail_triplet[0]}-{tail_triplet[1]}-{tail_triplet[2]}\n"
         f"📌 {description}\n\n"
@@ -541,7 +554,7 @@ async def handle_date(message: Message):
         reply_markup=inline_keyboard
     )
 
-# ——— обработка нажатия на кнопку "Я прочитал — сделать полный анализ" ———
+# ——— обработка нажатия на "Я прочитал — сделать полный анализ" ———
 @dp.callback_query(F.data == "full_analysis")
 async def callback_full_analysis(callback):
     payment_button = InlineKeyboardMarkup(
