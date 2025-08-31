@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
 dp = Dispatcher()
 
-# 👤 Твой ID (из @getmyid_bot)
+# 👤 Твой ID
 ADMIN_ID = 1030370280
 
 # Хранение пользователей, которые нажали "ГОТОВО"
@@ -105,14 +105,14 @@ DETAILED_DESCRIPTIONS = {
         "• Избавиться от страха и начать передавать знания.\n"
         "• Не закрываться в одиночестве — создай команду единомышленников."
     ),
-    # Остальные описания остаются без изменений (для краткости не дублирую)
+    # ... остальные описания
 }
 
 # ——— ссылки на PDF ———
 PDF_LINKS = {
     (18,6,6): "https://drive.google.com/file/d/10R1PoK8lQbcP5fEVVXecMoLymi45tsGW/view?usp=drive_link",
     (9,9,18): "https://drive.google.com/file/d/1QaMYUJv--n8iLwseG8_MAgz79dggEgg6/view?usp=drive_link",
-    # ... все остальные ссылки
+    # ... остальные
 }
 
 # ——— кнопки ———
@@ -203,7 +203,7 @@ async def send_contact(callback):
 @dp.message(F.text)
 async def process_date(message: Message):
     if message.from_user.id not in waiting_for_date:
-        return  # Игнорируем, если не ждём дату
+        return
 
     try:
         day, month, year = map(int, message.text.split("."))
@@ -217,7 +217,6 @@ async def process_date(message: Message):
 
     waiting_for_date.discard(message.from_user.id)
 
-    # Отправляем тебе (в личку)
     try:
         await bot.send_message(
             chat_id=ADMIN_ID,
@@ -230,35 +229,22 @@ async def process_date(message: Message):
         logger.error(f"Не удалось отправить админу: {e}")
         await message.answer("❌ Ошибка отправки данных. Пожалуйста, напишите мне в личные сообщения.")
 
-    # Ответ клиенту
     await message.answer(
         "Спасибо за доверие 🙏. В течение 24 часов я пришлю вам результат. "
         "Если у вас будут вопросы, пишите в личные сообщения <a href='https://t.me/Mattrehka'>Master Mystic</a>",
         parse_mode="HTML"
     )
 
-# ——— обработка "Я подумаю" ———
-@dp.callback_query(F.data == "think")
-async def think_callback(callback):
-    await callback.message.edit_text(
-        "Хорошо. А пока можешь подписаться на канал <a href='https://t.me/Master_Mystic'>Master Mystic</a>. "
-        "Многие, кто получил свой хвост, уже в канале. Присоединяйся — там живёт самая сильная энергия.",
-        reply_markup=None,
-        parse_mode="HTML"
-    )
-
 # ——— ОСНОВНОЙ ОБРАБОТЧИК ДАТЫ (бесплатный анализ) ———
-@dp.message(F.text.regexp(r"^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(\d{4})$"))
+@dp.message(F.text.regexp(r"^(\d{2})\.(\d{2})\.(\d{4})$"))
 async def handle_date(message: Message):
-    # Если пользователь в режиме ожидания платного анализа — пропускаем
     if message.from_user.id in waiting_for_date:
         return
 
     try:
         day, month, year = map(int, message.text.split("."))
-    except Exception as e:
-        logger.error(f"Ошибка парсинга даты: {e}")
-        await message.reply("⚠️ Ошибка обработки даты. Попробуйте снова.")
+    except:
+        await message.reply("⚠️ Ошибка формата даты. Введите в формате ДД.ММ.ГГГГ.")
         return
 
     if not (1 <= day <= 31) or not (1 <= month <= 12) or year < 1900:
@@ -308,7 +294,6 @@ async def main():
     from aiohttp import web
     from aiogram.webhook.aiohttp_server import SimpleRequestHandler
 
-    # Устанавливаем вебхук
     try:
         webhook_info = await bot.get_webhook_info()
         if webhook_info.url != WEBHOOK_URL:
@@ -319,7 +304,6 @@ async def main():
     except Exception as e:
         logger.error(f"❌ Ошибка при установке webhook: {e}")
 
-    # Настройка веб-сервера
     app = web.Application()
     SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path="/webhook")
     runner = web.AppRunner(app)
