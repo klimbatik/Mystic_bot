@@ -419,7 +419,7 @@ async def start(message: Message):
 # ——— обработчик "Подписаться на канал Master Mystic" ———
 @dp.message(F.text == "Подписаться на канал Master Mystic")
 async def subscribe(message: Message):
-    # Отправляем только кнопку
+    # Отправляем только кнопку (без текста)
     await message.answer(
         reply_markup=subscribe_button
     )
@@ -526,11 +526,11 @@ async def handle_date(message: Message):
     combined_buttons = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="?? Читать полностью", url=PDF_LINKS.get(tail_triplet, "#"))],
-            [InlineKeyboardButton(text="🔥 Сделать полный анализ", callback_data="full_analysis")]
+            [InlineKeyboardButton(text="?? Сделать полный анализ", callback_data="full_analysis")]
         ]
     )
 
-    # Отправляем результат
+    # Отправляем результат с двумя кнопками
     await message.answer(
         f"?? <b>Твой кармический хвост:</b> {tail_triplet[0]}-{tail_triplet[1]}-{tail_triplet[2]}\n"
         f"?? {description}\n\n"
