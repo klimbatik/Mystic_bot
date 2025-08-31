@@ -7,10 +7,11 @@ from aiogram.filters import Command
 
 # 🔐 Переменные окружения
 BOT_TOKEN = os.getenv("BOT_TOKEN")
+CHANNEL_ID = "@Master_Mystic"
 if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN не установлен в переменных окружения")
 
-# 🌐 URL вебхука (для bot_render.ru)
+# 🌐 URL вебхука
 WEBHOOK_URL = f"https://{os.getenv('RENDER_EXTERNAL_HOSTNAME')}/webhook"
 
 # 🛠️ Инициализация бота
@@ -393,8 +394,8 @@ PDF_LINKS = {
 # ——— кнопки ———
 start_keyboard = ReplyKeyboardMarkup(
     keyboard=[
-        [KeyboardButton(text="Ввести дату")],
-        [KeyboardButton(text="Сделать полный анализ")]
+        [KeyboardButton(text="Сделать полный анализ")],
+        [KeyboardButton(text="Подписаться на канал Master Mystic")]
     ],
     resize_keyboard=True
 )
@@ -412,50 +413,14 @@ async def start(message: Message):
         "Привет! Я — бот <b>Master Mystic</b> 🌿\n\n"
         "Я помогу рассчитать твой <i>Кармический хвост</i> и узнать главные задачи души, которые ты притащил(а) из прошлой жизни. Что мешает тебе двигаться вперёд.\n\n"
         "Это бесплатно.\n\n"
-        "Введи свою дату рождения в формате <b>ДД.ММ.ГГГГ</b>",
+        "Нажми кнопку ниже:",
         reply_markup=start_keyboard
     )
 
-# ——— обработчик кнопки "Ввести дату" ———
-@dp.message(F.text == "Ввести дату")
-async def ask_for_date(message: Message):
-    await message.answer(
-        "Введите дату рождения в формате <b>ДД.ММ.ГГГГ</b> (например, 15.04.1990):",
-    )
-
-# ——— обработчик даты ———
-@dp.message(F.text.regexp(r"^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(\d{4})$"))
-async def handle_date(message: Message):
-    try:
-        day, month, year = map(int, message.text.split("."))
-    except:
-        await message.reply("⚠️ Ошибка обработки даты. Попробуйте снова.")
-        return
-
-    if not (1 <= day <= 31) or not (1 <= month <= 12) or year < 1900:
-        await message.reply("⚠️ Введите корректную дату.")
-        return
-
-    tail_triplet = calc_tail(day, month, year)
-    description = describe_tail(tail_triplet)
-    detailed_text = DETAILED_DESCRIPTIONS.get(tail_triplet, "Подробное описание пока недоступно.")
-
-    # Кнопка "ЧИТАТЬ ПОЛНОСТЬЮ"
-    read_button = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="📖 ЧИТАТЬ ПОЛНОСТЬЮ", url=PDF_LINKS.get(tail_triplet, "#"))]
-        ]
-    )
-
-    # Отправляем результат
-    await message.answer(
-        f"🔮 <b>Твой кармический хвост:</b> {tail_triplet[0]}-{tail_triplet[1]}-{tail_triplet[2]}\n"
-        f"📌 {description}\n\n"
-        f"{detailed_text}",
-        reply_markup=read_button
-    )
-
-    # Призыв к подписке
+# ——— обработчик "Подписаться на канал Master Mystic" ———
+@dp.message(F.text == "Подписаться на канал Master Mystic")
+async def subscribe(message: Message):
+    # Отправляем сообщение с кнопкой
     await message.answer(
         "🔹 Подписывайся на мой канал, где я делюсь:\n"
         "• Кейсами клиентов\n"
@@ -503,11 +468,40 @@ async def send_payment_info(callback):
 # ——— обработка "ГОТОВО" ———
 @dp.callback_query(F.data == "ready")
 async def send_contact(callback):
+    # Запрос даты рождения
     await callback.message.edit_text(
-        "Отлично! 🎉\n\n"
-        "Теперь напиши мне свою дату рождения в личные сообщения: @Mattrehka\n\n"
-        "Я свяжусь с тобой и пришлю полный анализ.",
-        reply_markup=None
+        "Пожалуйста, введите вашу дату рождения в формате <b>ДД.ММ.ГГГГ</b> (например, 15.04.1990):",
+        reply_markup=None,
+        parse_mode="HTML"
+    )
+    # Сохраняем состояние пользователя
+    await callback.message.answer("⏳ Ожидаем ввод даты рождения...")
+    # Устанавливаем обработчик сообщений
+    dp.message.register(process_date, F.text.regexp(r"^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(\d{4})$"))
+
+# ——— обработка ввода даты рождения ———
+async def process_date(message: Message):
+    try:
+        day, month, year = map(int, message.text.split("."))
+    except:
+        await message.reply("⚠️ Ошибка формата даты. Введите в формате ДД.ММ.ГГГГ.")
+        return
+
+    if not (1 <= day <= 31) or not (1 <= month <= 12) or year < 1900:
+        await message.reply("⚠️ Введите корректную дату.")
+        return
+
+    # Отправляем дату в личные сообщения
+    await bot.send_message(
+        chat_id="@Mattrehka",  # Замените на ваш @username
+        text=f"Новый клиент: {message.from_user.full_name}\nДата рождения: {day}.{month}.{year}"
+    )
+
+    # Сообщение клиенту
+    await message.answer(
+        "Спасибо за доверие 🙏. В течение 24 часов я пришлю вам результат. "
+        "Если у вас будут вопросы, пишите в личные сообщения <a href='https://t.me/Mattrehka'>Master Mystic</a>",
+        parse_mode="HTML"
     )
 
 # ——— обработка "Я подумаю" ———
@@ -518,6 +512,58 @@ async def think_callback(callback):
         "Многие, кто получил свой хвост, уже в канале. Присоединяйся — там живёт самая сильная энергия.",
         reply_markup=None,
         parse_mode="HTML"
+    )
+
+# ——— обработчик даты ———
+@dp.message(F.text.regexp(r"^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(\d{4})$"))
+async def handle_date(message: Message):
+    try:
+        day, month, year = map(int, message.text.split("."))
+    except:
+        await message.reply("⚠️ Ошибка обработки даты. Попробуйте снова.")
+        return
+
+    if not (1 <= day <= 31) or not (1 <= month <= 12) or year < 1900:
+        await message.reply("⚠️ Введите корректную дату.")
+        return
+
+    tail_triplet = calc_tail(day, month, year)
+    description = describe_tail(tail_triplet)
+    detailed_text = DETAILED_DESCRIPTIONS.get(tail_triplet, "Подробное описание пока недоступно.")
+
+    # Кнопка "Читать полностью"
+    read_button = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="📖 Читать полностью", url=PDF_LINKS.get(tail_triplet, "#"))]
+        ]
+    )
+
+    # Отправляем результат
+    await message.answer(
+        f"🔮 <b>Твой кармический хвост:</b> {tail_triplet[0]}-{tail_triplet[1]}-{tail_triplet[2]}\n"
+        f"📌 {description}\n\n"
+        f"{detailed_text}",
+        reply_markup=read_button
+    )
+
+    # Добавляем кнопку "Сделать полный анализ" после результата
+    await message.answer(
+        "🎯 Хотите получить полный анализ?",
+        reply_markup=InlineKeyboardMarkup(
+            inline_keyboard=[
+                [InlineKeyboardButton(text="Сделать полный анализ", callback_data="full_analysis")]
+            ]
+        )
+    )
+
+    # Призыв к подписке
+    await message.answer(
+        "🔹 Подписывайся на мой канал, где я делюсь:\n"
+        "• Кейсами клиентов\n"
+        "• Энергетикой камней\n"
+        "• Как менять жизнь через матрицу судьбы\n\n"
+        "Будет интересно!",
+        reply_markup=subscribe_button
     )
 
 # ——— запуск бота ———
