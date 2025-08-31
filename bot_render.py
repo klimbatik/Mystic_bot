@@ -492,16 +492,18 @@ async def process_date(message: Message):
         await message.reply("⚠️ Введите корректную дату.")
         return
 
-    # Убираем пользователя из ожидания
     waiting_for_date.discard(message.from_user.id)
 
-    # Отправляем дату в @Mattrehka
-    await bot.send_message(
-        chat_id="@Mattrehka",
-        text=f"Новый клиент: {message.from_user.full_name}\nДата рождения: {day}.{month}.{year}"
-    )
+    try:
+        await bot.send_message(
+            chat_id=ADMIN_ID,
+            text=f"Новый клиент: {message.from_user.full_name}\n"
+                 f"Юзернейм: @{message.from_user.username or 'нет'}\n"
+                 f"Дата рождения: {day}.{month}.{year}"
+        )
+    except Exception as e:
+        print(f"Не удалось отправить админу: {e}")
 
-    # Отправляем клиенту подтверждение
     await message.answer(
         "Спасибо за доверие 🙏. В течение 24 часов я пришлю вам результат. "
         "Если у вас будут вопросы, пишите в личные сообщения <a href='https://t.me/Mattrehka'>Master Mystic</a>",
@@ -521,7 +523,7 @@ async def think_callback(callback):
 # ——— обработчик даты (для бесплатного анализа) ———
 @dp.message(F.text.regexp(r"^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(\d{4})$"))
 async def handle_date(message: Message):
-    # Если пользователь в режиме ожидания даты, игнорируем
+    # Если пользователь в режиме ожидания оплаты — не обрабатываем
     if message.from_user.id in waiting_for_date:
         return
 
@@ -542,7 +544,40 @@ async def handle_date(message: Message):
     inline_keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="📖 Читать подробности", url=PDF_LINKS.get(tail_triplet, "#"))],
-            [InlineKeyboardButton(text="✅ Сделать полный анализ", callback_data="full_analysis")]
+            [InlineKeyboardButton(text="✅ Я прочитал — сделать полный анализ", callback_data="full_analysis")]
+        ]
+    )
+
+    await message.answer(
+        f"🔮 <b>Твой кармический хвост:</b> {tail_triplet[0]}-{tail_triplet[1]}-{tail_triplet[2]}\n"
+        f"📌 {description}\n\n"
+        f"{detailed_text}",
+        reply_markup=inline_keyboard
+    )# ——— обработчик даты (для бесплатного анализа) ———
+@dp.message(F.text.regexp(r"^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(\d{4})$"))
+async def handle_date(message: Message):
+    # Если пользователь в режиме ожидания оплаты — не обрабатываем
+    if message.from_user.id in waiting_for_date:
+        return
+
+    try:
+        day, month, year = map(int, message.text.split("."))
+    except:
+        await message.reply("⚠️ Ошибка обработки даты. Попробуйте снова.")
+        return
+
+    if not (1 <= day <= 31) or not (1 <= month <= 12) or year < 1900:
+        await message.reply("⚠️ Введите корректную дату.")
+        return
+
+    tail_triplet = calc_tail(day, month, year)
+    description = describe_tail(tail_triplet)
+    detailed_text = DETAILED_DESCRIPTIONS.get(tail_triplet, "Подробное описание пока недоступно.")
+
+    inline_keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="📖 Читать подробности", url=PDF_LINKS.get(tail_triplet, "#"))],
+            [InlineKeyboardButton(text="✅ Я прочитал — сделать полный анализ", callback_data="full_analysis")]
         ]
     )
 
@@ -552,7 +587,6 @@ async def handle_date(message: Message):
         f"{detailed_text}",
         reply_markup=inline_keyboard
     )
-
 # ——— обработка нажатия на "Я прочитал — сделать полный анализ" ———
 @dp.callback_query(F.data == "full_analysis")
 async def callback_full_analysis(callback):
@@ -593,3 +627,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
