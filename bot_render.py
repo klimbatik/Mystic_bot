@@ -530,11 +530,11 @@ async def send_contact(callback):
         await bot.send_message(
             chat_id=ADMIN_ID,
             text=(
-                f"📩 <b>Новый клиент:</b> {user.full_name}\n"
-                f"👤 Юзернейм: @{user.username or 'нет'}\n"
-                f"🆔 ID: {user_id}\n"
-                f"📅 Дата рождения: {birth_date}\n"
-                f"🔗 <a href='tg://user?id={user_id}'>Связаться с клиентом</a>"
+                f"<b>Новый клиент:</b> {user.full_name}\n"
+                f"Юзернейм: @{user.username or 'нет'}\n"
+                f"ID: {user_id}\n"
+                f"Дата рождения: {birth_date}\n"
+                f"<a href='tg://user?id={user_id}'>Связаться с клиентом</a>"
             ),
             parse_mode="HTML"
         )
@@ -610,3 +610,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
