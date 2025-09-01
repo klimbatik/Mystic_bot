@@ -552,7 +552,7 @@ async def think_callback(callback):
         parse_mode="HTML"
     )
 
-# ——— обработка нажатия на "Я прочитал — сделать полный анализ" ———
+# ——— обработка нажатия на "Сделать полный анализ" ———
 @dp.callback_query(F.data == "full_analysis")
 async def callback_full_analysis(callback):
     payment_button = InlineKeyboardMarkup(
@@ -602,4 +602,5 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
 
