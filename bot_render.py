@@ -227,8 +227,8 @@ async def handle_date(message: Message):
 
     inline_keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="📖 Читать подробности", url=PDF_LINKS.get(tail_triplet, "#"))],
-            [InlineKeyboardButton(text="✅ Я прочитал — сделать полный анализ", callback_data="full_analysis")]
+            [InlineKeyboardButton(text="📖 ЧИТАТЬ ПОДРОБНЕЕ", url=PDF_LINKS.get(tail_triplet, "#"))],
+            [InlineKeyboardButton(text="✅ СДЕЛАТЬ ПОЛНЫЙ АНАЛИЗ", callback_data="full_analysis")]
         ]
     )
 
@@ -289,7 +289,7 @@ async def think_callback(callback):
         parse_mode="HTML"
     )
 
-# ——— обработка "Я прочитал — сделать полный анализ" ———
+# ——— обработка "СДЕЛАТЬ ПОЛНЫЙ АНАЛИЗ" ———
 @dp.callback_query(F.data == "full_analysis")
 async def callback_full_analysis(callback):
     payment_button = InlineKeyboardMarkup(
@@ -339,3 +339,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
