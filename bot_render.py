@@ -502,7 +502,14 @@ async def handle_date(message: Message):
     if message.from_user.id in waiting_for_date:
         waiting_for_date.discard(message.from_user.id)
 
-        
+        # Отправляем данные админу
+        try:
+            await bot.send_message(
+                chat_id=ADMIN_ID,
+                text=f"Новый клиент: {message.from_user.full_name}\n"
+                     f"Юзернейм: @{message.from_user.username or 'нет'}\n"
+                     f"Дата рождения: {day}.{month}.{year}"
+            )
             logger.info(f"✅ Данные отправлены админу: {day}.{month}.{year}")
         except Exception as e:
             logger.error(f"❌ Ошибка отправки админу: {e}")
@@ -595,7 +602,6 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-
 
 
 
