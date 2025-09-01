@@ -25,9 +25,8 @@ dp = Dispatcher()
 # 👤 Твой Telegram ID
 ADMIN_ID = 1030370280
 
-# Хранение пользователей и их данных
-waiting_for_date = set()           # Пользователи, которые нажали "ГОТОВО", но ещё не ввели дату
-user_birthdays = {}                # Сохранённые даты рождения: {user_id: "ДД.ММ.ГГГГ"}
+# Хранение последней даты по пользователю
+user_last_birthday = {}  # {user_id: "дата"}
 
 # ——— функция нормализации ———
 def norm22(n: int) -> int:
@@ -476,7 +475,7 @@ async def send_payment_info(callback):
     )
     await callback.message.edit_text(payment_info, reply_markup=ready_button, parse_mode="HTML")
 
-# ——— ОБРАБОТЧИК ДАТЫ (с сохранением) ———
+# ——— СОХРАНЕНИЕ ДАТЫ ПРИ ВВОДЕ ———
 @dp.message(F.text.regexp(r"^(\d{2})\.(\d{2})\.(\d{4})$"))
 async def handle_date(message: Message):
     try:
@@ -489,20 +488,8 @@ async def handle_date(message: Message):
         await message.reply("⚠️ Введите корректную дату.")
         return
 
-    # Если пользователь в режиме ожидания после оплаты
-    if message.from_user.id in waiting_for_date:
-        waiting_for_date.discard(message.from_user.id)
-
-        # Сохраняем дату рождения
-        user_birthdays[message.from_user.id] = f"{day}.{month}.{year}"
-
-        # Ответ клиенту
-        await message.answer(
-            "Спасибо за доверие 🙏. В течение 24 часов я пришлю вам результат. "
-            "Если у вас будут вопросы, пишите в личные сообщения <a href='https://t.me/Mattrehka'>Master Mystic</a>",
-            parse_mode="HTML"
-        )
-        return
+    # Сохраняем дату как последнюю
+    user_last_birthday[message.from_user.id] = f"{day}.{month}.{year}"
 
     # === БЕСПЛАТНЫЙ АНАЛИЗ ===
     tail_triplet = calc_tail(day, month, year)
@@ -524,44 +511,44 @@ async def handle_date(message: Message):
         parse_mode="HTML"
     )
 
-# ——— обработка "ГОТОВО" ———
+# ——— ОБРАБОТКА "ГОТОВО" — ПОЛНЫЙ АНАЛИЗ ———
 @dp.callback_query(F.data == "ready")
 async def send_contact(callback):
     user_id = callback.from_user.id
+    user = callback.from_user
 
-    # Проверяем, есть ли уже сохранённая дата
-    if user_id in user_birthdays:
-        birth_date = user_birthdays[user_id]
+    # Ищем сохранённую дату
+    birth_date = user_last_birthday.get(user_id)
 
-        # Отправляем данные в личку админу
-        try:
-            await bot.send_message(
-                chat_id=ADMIN_ID,
-                text=(
-                    f"📩 <b>Новый клиент:</b> {callback.from_user.full_name}\n"
-                    f"👤 Юзернейм: @{callback.from_user.username or 'нет'}\n"
-                    f"🆔 ID: {user_id}\n"
-                    f"📅 Дата рождения: {birth_date}\n"
-                    f"🔗 <a href='tg://user?id={user_id}'>Связаться с клиентом</a>"
-                ),
-                parse_mode="HTML"
-            )
-            logger.info(f"✅ Данные клиента {user_id} отправлены админу")
-        except Exception as e:
-            logger.error(f"❌ Ошибка отправки админу: {e}")
+    if not birth_date:
+        await callback.message.answer("❌ Вы не вводили дату рождения.")
+        await callback.message.edit_reply_markup(reply_markup=None)
+        return
 
-        await callback.message.edit_text(
-            "Данные успешно отправлены. Спасибо!",
-            reply_markup=None
+    # Отправляем тебе в личку
+    try:
+        await bot.send_message(
+            chat_id=ADMIN_ID,
+            text=(
+                f"📩 <b>Новый клиент:</b> {user.full_name}\n"
+                f"👤 Юзернейм: @{user.username or 'нет'}\n"
+                f"🆔 ID: {user_id}\n"
+                f"📅 Дата рождения: {birth_date}\n"
+                f"🔗 <a href='tg://user?id={user_id}'>Связаться с клиентом</a>"
+            ),
+            parse_mode="HTML"
         )
-    else:
-        # На всякий случай — если дата не найдена
-        waiting_for_date.add(user_id)
-        await callback.message.edit_text(
-            "Пожалуйста, введите вашу дату рождения в формате <b>ДД.ММ.ГГГГ</b>.",
-            parse_mode="HTML",
-            reply_markup=None
-        )
+        logger.info(f"✅ Данные клиента {user_id} отправлены админу")
+    except Exception as e:
+        logger.error(f"❌ Ошибка отправки админу: {e}")
+        await callback.message.answer("❌ Не удалось отправить данные. Напишите мне в личные сообщения.")
+
+    # Клиенту
+    await callback.message.edit_text(
+        "Спасибо за доверие 🙏. В течение 24 часов я пришлю вам результат. "
+        "Если у вас будут вопросы, пишите в личные сообщения <a href='https://t.me/Mattrehka'>Master Mystic</a>",
+        parse_mode="HTML"
+    )
 
 # ——— обработка "Я подумаю" ———
 @dp.callback_query(F.data == "think")
