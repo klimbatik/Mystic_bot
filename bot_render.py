@@ -531,7 +531,7 @@ async def handle_date(message: Message):
     inline_keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="📖 Читать подробности", url=PDF_LINKS.get(tail_triplet, "#"))],
-            [InlineKeyboardButton(text="✅ Я прочитал — сделать полный анализ", callback_data="full_analysis")]
+            [InlineKeyboardButton(text="✅ Сделать полный анализ", callback_data="full_analysis")]
         ]
     )
 
@@ -602,3 +602,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
