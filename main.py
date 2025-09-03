@@ -3,7 +3,7 @@ import asyncio
 import logging
 from aiogram import Bot, Dispatcher, F
 from aiogram.client.default import DefaultBotProperties
-from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, CallbackQuery
 from aiogram.filters import Command
 from aiohttp import web
 
@@ -480,7 +480,7 @@ async def full_analysis(message: Message):
 
 # ——— обработка "Продолжить" ———
 @dp.callback_query(F.data == "pay")
-async def send_payment_info(callback: types.CallbackQuery):
+async def send_payment_info(callback: CallbackQuery):
     payment_info = (
         "💳 <b>Реквизиты для оплаты:</b>\n\n"
         "Сбербанк: <code>4276 5400 2708 8180</code>\n\n"
@@ -570,9 +570,9 @@ async def handle_date(message: Message):
     task = asyncio.create_task(delayed_message())
     pending_notifications[user_id] = task
 
-# ——— ОБРАБОТКА "ХОЧУ ЗАКАЗАТЬ БРАСЛЕТ" ———
+# ——— ОБРАБОТКА КНОПКИ "ХОЧУ ЗАКАЗАТЬ БРАСЛЕТ" ———
 @dp.callback_query(F.data == "want_bracelet")
-async def want_bracelet(callback: types.CallbackQuery):
+async def want_bracelet_callback(callback: CallbackQuery):
     contact_button = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="💬 УТОЧНИТЬ ДЕТАЛИ", url="https://t.me/Mattrehka")]
@@ -587,18 +587,8 @@ async def want_bracelet(callback: types.CallbackQuery):
         parse_mode="HTML"
     )
 
-# ——— ОБРАБОТКА "Я ПОДУМАЮ" — ВСПЛЫВАЮЩЕЕ ОКНО ———
-@dp.callback_query(F.data == "think_bracelet")
-async def think_bracelet(callback: types.CallbackQuery):
-    await callback.message.edit_text(
-        "Хорошо, подумай. Но помни: твоя душа уже знает, что тебе нужно двигаться вперёд. "
-        "Когда захочешь — просто напиши «Хочу браслет».",
-        reply_markup=None,
-        parse_mode="HTML"
-    )
-
-# ——— ОБРАБОТКА ТЕКСТА: "Хочу браслет" ———
-@dp.message(F.text == "Хочу браслет")
+# ——— ОБРАБОТКА ТЕКСТА "Хочу браслет" ———
+@dp.message(F.text.regexp(r"(?i).*хочу.*браслет.*"))
 async def handle_want_bracelet(message: Message):
     contact_button = InlineKeyboardMarkup(
         inline_keyboard=[
@@ -617,9 +607,21 @@ async def handle_want_bracelet(message: Message):
         parse_mode="HTML"
     )
 
+# ——— ОБРАБОТКА "Я ПОДУМАЮ" — ОТДЕЛЬНОЕ СООБЩЕНИЕ ———
+@dp.callback_query(F.data == "think_bracelet")
+async def think_bracelet(callback: CallbackQuery):
+    await bot.send_message(
+        chat_id=callback.from_user.id,
+        text=(
+            "Хорошо, подумай. Но помни: твоя душа уже знает, что тебе нужно двигаться вперёд. "
+            "Когда захочешь — просто напиши «Хочу браслет»."
+        ),
+        parse_mode="HTML"
+    )
+
 # ——— ОБРАБОТКА "ГОТОВО" — ПОЛНЫЙ АНАЛИЗ ———
 @dp.callback_query(F.data == "ready")
-async def send_contact(callback: types.CallbackQuery):
+async def send_contact(callback: CallbackQuery):
     user_id = callback.from_user.id
     user = callback.from_user
 
@@ -662,7 +664,7 @@ async def send_contact(callback: types.CallbackQuery):
 
 # ——— обработка "Я подумаю" (в полном анализе) ———
 @dp.callback_query(F.data == "think")
-async def think_callback(callback: types.CallbackQuery):
+async def think_callback(callback: CallbackQuery):
     await callback.message.edit_text(
         "Хорошо. А пока можешь подписаться на канал <a href='https://t.me/Master_Mystic'>Master Mystic</a>. "
         "Многие, кто получил свой хвост, уже в канале. Присоединяйся — там живёт самая сильная энергия.",
@@ -672,7 +674,7 @@ async def think_callback(callback: types.CallbackQuery):
 
 # ——— обработка "СДЕЛАТЬ ПОЛНЫЙ АНАЛИЗ" ———
 @dp.callback_query(F.data == "full_analysis")
-async def callback_full_analysis(callback: types.CallbackQuery):
+async def callback_full_analysis(callback: CallbackQuery):
     payment_button = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="✅ Продолжить", callback_data="pay")],
