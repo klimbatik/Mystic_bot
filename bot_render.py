@@ -6,6 +6,8 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 from aiogram.filters import Command
 from aiogram import types
+from aiohttp import web
+
 
 # 🔐 Переменные окружения
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -670,9 +672,14 @@ async def callback_full_analysis(callback: types.CallbackQuery):
         parse_mode="HTML"
     )
 
+
+# ——— ЭНДПОИНТ /health ДЛЯ UPTIMEROBOT ———
+async def health(request):
+    return web.Response(text="OK", status=200)
+
+
 # ——— запуск бота ———
 async def main():
-    from aiohttp import web
     from aiogram.webhook.aiohttp_server import SimpleRequestHandler
 
     if WEBHOOK_URL:
@@ -690,6 +697,7 @@ async def main():
 
     app = web.Application()
     SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path="/webhook")
+    app.router.add_get('/health', health)  # ← Этот эндпоинт теперь работает!
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, host="0.0.0.0", port=int(os.getenv("PORT", 10000)))
@@ -700,6 +708,7 @@ async def main():
         await asyncio.sleep(3600)
     finally:
         await runner.cleanup()
+
 
 if __name__ == "__main__":
     asyncio.run(main())
