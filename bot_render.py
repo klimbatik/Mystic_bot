@@ -478,11 +478,15 @@ async def send_payment_info(callback):
     await callback.message.edit_text(payment_info, reply_markup=ready_button, parse_mode="HTML")
 
 # ——— СОХРАНЕНИЕ ДАТЫ ПРИ ВВОДЕ ———
-@dp.message(F.text.regexp(r"^(\d{2})\.(\d{2})\.(\d{4})$"))
+@dp.message(F.text.regexp(r"^\s*(\d{2})\.\s*(\d{2})\.\s*(\d{4})\s*$"))
 async def handle_date(message: Message):
+    logger.info(f"Получено сообщение: {message.text}")
     try:
-        day, month, year = map(int, message.text.split("."))
-    except:
+        # Убираем пробелы и парсим
+        text = message.text.strip()
+        day, month, year = map(int, text.split("."))
+    except Exception as e:
+        logger.error(f"Ошибка парсинга даты: {e}")
         await message.reply("⚠️ Ошибка формата даты. Введите в формате ДД.ММ.ГГГГ.")
         return
 
@@ -490,11 +494,10 @@ async def handle_date(message: Message):
         await message.reply("⚠️ Введите корректную дату.")
         return
 
-    # Сохраняем дату
     user_id = message.from_user.id
     user_last_birthday[user_id] = f"{day}.{month}.{year}"
 
-    # Отмена предыдущего уведомления, если есть
+    # Отмена предыдущего уведомления
     if user_id in pending_notifications:
         pending_notifications[user_id].cancel()
 
@@ -518,7 +521,7 @@ async def handle_date(message: Message):
         parse_mode="HTML"
     )
 
-    # Запускаем таймер на 1 минуту (было 5 минут)
+    # Запускаем таймер на 1 минуту
     async def delayed_message():
         await asyncio.sleep(60)  # 1 минута
         bracelet_keyboard = InlineKeyboardMarkup(
@@ -538,7 +541,6 @@ async def handle_date(message: Message):
             parse_mode="HTML"
         )
 
-    # Запускаем задачу
     task = asyncio.create_task(delayed_message())
     pending_notifications[user_id] = task
 
@@ -574,7 +576,6 @@ async def send_contact(callback):
     user_id = callback.from_user.id
     user = callback.from_user
 
-    # Ищем сохранённую дату
     birth_date = user_last_birthday.get(user_id)
 
     if not birth_date:
@@ -582,7 +583,6 @@ async def send_contact(callback):
         await callback.message.edit_reply_markup(reply_markup=None)
         return
 
-    # Отправляем тебе в личку
     try:
         await bot.send_message(
             chat_id=ADMIN_ID,
@@ -600,7 +600,6 @@ async def send_contact(callback):
         logger.error(f"❌ Ошибка отправки админу: {e}")
         await callback.message.answer("❌ Не удалось отправить данные. Напишите мне в личные сообщения.")
 
-    # Клиенту
     await callback.message.edit_text(
         "Спасибо за доверие 🙏. В течение 24 часов я пришлю вам результат. "
         "Если у вас будут вопросы, пишите в личные сообщения <a href='https://t.me/Mattrehka'>Master Mystic</a>",
