@@ -457,8 +457,23 @@ async def subscribe(message: Message):
 # ——— обработчик "Сделать полный анализ" ———
 @dp.message(F.text == "Сделать полный анализ")
 async def full_analysis(message: Message):
+    user_id = message.from_user.id
+    birth_date = user_last_birthday.get(user_id)
+    
+    if not birth_date:
+        await message.answer("❌ Сначала введите дату рождения.")
+        return
+
+    try:
+        day, month, year = map(int, birth_date.split("."))
+        tail_triplet = calc_tail(day, month, year)
+    except:
+        await message.answer("❌ Ошибка обработки даты.")
+        return
+
     payment_button = InlineKeyboardMarkup(
         inline_keyboard=[
+            [InlineKeyboardButton(text="📖 ЧИТАТЬ ПОДРОБНЕЕ", url=PDF_LINKS.get(tail_triplet, "#"))],
             [InlineKeyboardButton(text="✅ Продолжить", callback_data="pay")],
             [InlineKeyboardButton(text="⏸ Я подумаю", callback_data="think")]
         ]
@@ -675,20 +690,38 @@ async def think_callback(callback: CallbackQuery):
 # ——— обработка "СДЕЛАТЬ ПОЛНЫЙ АНАЛИЗ" ———
 @dp.callback_query(F.data == "full_analysis")
 async def callback_full_analysis(callback: CallbackQuery):
+    user_id = callback.from_user.id
+    birth_date = user_last_birthday.get(user_id)
+    
+    if not birth_date:
+        await bot.send_message(chat_id=user_id, text="❌ Сначала введите дату рождения.")
+        return
+
+    try:
+        day, month, year = map(int, birth_date.split("."))
+        tail_triplet = calc_tail(day, month, year)
+    except:
+        await bot.send_message(chat_id=user_id, text="❌ Ошибка обработки даты.")
+        return
+
     payment_button = InlineKeyboardMarkup(
         inline_keyboard=[
+            [InlineKeyboardButton(text="📖 ЧИТАТЬ ПОДРОБНЕЕ", url=PDF_LINKS.get(tail_triplet, "#"))],
             [InlineKeyboardButton(text="✅ Продолжить", callback_data="pay")],
             [InlineKeyboardButton(text="⏸ Я подумаю", callback_data="think")]
         ]
     )
-    await callback.message.send_message(
-        "<b>Отлично! В полном анализе ты узнаешь:</b>\n"
-        "● Денежный код\n"
-        "● Призвание и путь души\n"
-        "● Кармические задачи\n"
-        "● Зоны силы и слабости\n\n"
-        "<b>💲 Полный анализ по Матрице судьбы будет стоить 2000₽.</b>\n\n"
-        "Это не гадание, это анализ по дате рождения. Хочешь получить? Жми «Продолжить» — и я пришлю реквизиты для оплаты. После оплаты — в течение 24 часов пришлю подробный расчёт.",
+    await bot.send_message(  # ❗ ИСПРАВЛЕНО: не edit_text, а send_message
+        chat_id=callback.from_user.id,
+        text=(
+            "<b>Отлично! В полном анализе ты узнаешь:</b>\n"
+            "● Денежный код\n"
+            "● Призвание и путь души\n"
+            "● Кармические задачи\n"
+            "● Зоны силы и слабости\n\n"
+            "<b>💲 Полный анализ по Матрице судьбы будет стоить 2000₽.</b>\n\n"
+            "Это не гадание, это анализ по дате рождения. Хочешь получить? Жми «Продолжить» — и я пришлю реквизиты для оплаты. После оплаты — в течение 24 часов пришлю подробный расчёт."
+        ),
         reply_markup=payment_button,
         parse_mode="HTML"
     )
@@ -704,7 +737,6 @@ async def root(request):
 async def main():
     from aiogram.webhook.aiohttp_server import SimpleRequestHandler
 
-    # Установка вебхука
     if WEBHOOK_URL:
         try:
             webhook_info = await bot.get_webhook_info()
@@ -718,17 +750,10 @@ async def main():
     else:
         logger.warning("⚠️ RENDER_EXTERNAL_HOSTNAME не задан — вебхук не установлен")
 
-    # Создание веб-приложения
     app = web.Application()
-    
-    # Регистрация обработчика вебхука
     SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path="/webhook")
-    
-    # Добавление эндпоинтов
     app.router.add_get('/health', health)
-    app.router.add_get('/', root)  # Главная страница
-    
-    # Запуск сервера
+    app.router.add_get('/', root)
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, host="0.0.0.0", port=int(os.getenv("PORT", 10000)))
@@ -742,4 +767,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-
