@@ -5,7 +5,7 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.client.default import DefaultBotProperties
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 from aiogram.filters import Command
-from aiogram.utils.media_group import MediaGroupBuilder
+from aiogram import types
 
 # 🔐 Переменные окружения
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -28,7 +28,7 @@ ADMIN_ID = 1030370280
 
 # Хранение последней даты по пользователю
 user_last_birthday = {}  # {user_id: "дата"}
-user_pending_bracelet = {}  # {user_id: True}
+pending_notifications = {}  # {user_id: task} — для отмены уведомлений
 
 # ——— функция нормализации ———
 def norm22(n: int) -> int:
@@ -338,7 +338,7 @@ DETAILED_DESCRIPTIONS = {
     ),
     (12,18,3): (
         "Ты сильно болел, был калекой, не принял боль. "
-        "В этой жизни ты можешь стать инвалидом или бояться болезнь.\n\n"
+        "В этой жизни ты можешь стать инвалидом или бояться болезни.\n\n"
         "Ты можешь бояться заболеть, особенно после 40 лет. "
         "Может быть страх заботиться о больном.\n\n"
         "❗ <b>Задачи этого хвоста:</b>\n"
@@ -348,7 +348,7 @@ DETAILED_DESCRIPTIONS = {
     ),
     (18,3,12): (
         "Ты сильно болел, был калекой, не принял боль. "
-        "В этой жизни ты можешь стать инвалидом или бояться болезнь.\n\n"
+        "В этой жизни ты можешь стать инвалидом или бояться болезни.\n\n"
         "Ты можешь бояться заболеть, особенно после 40 лет. "
         "Может быть страх заботиться о больном.\n\n"
         "❗ <b>Задачи этого хвоста:</b>\n"
@@ -373,34 +373,34 @@ DETAILED_DESCRIPTIONS = {
 # ——— ссылки на PDF ———
 PDF_LINKS = {
     (18,6,6): "https://drive.google.com/file/d/10R1PoK8lQbcP5fEVVXecMoLymi45tsGW/view?usp=drive_link",
-    (9,9,18): "  https://drive.google.com/file/d/1QaMYUJv--n8iLwseG8_MAgz79dggEgg6/view?usp=drive_link",
-    (9,18,9): "  https://drive.google.com/file/d/1uRuiDM-csTgk6SGweSkhbGT20yfK1kXd/view?usp=drive_link",
-    (18,9,9): "  https://drive.google.com/file/d/10kDSS349TSu9eYaiCo61uWVjx11WOWRA/view?usp=drive_link",
-    (6,5,17): "  https://drive.google.com/file/d/1IOKcMbpaRniLBmPL8s-anCwi1eBrr_O9/view?usp=drive_link",
-    (15,20,5): "  https://drive.google.com/file/d/1t3mCNby-NCCBE4Pz_EFbuvXsJim9mpqG/view?usp=drive_link",
-    (15,5,8): "  https://drive.google.com/file/d/161NMgmh9KDcrK0og17JrHBSloSNYvNmz/view?usp=drive_link",
-    (3,9,12): "  https://drive.google.com/file/d/1w69XCIBm3u6XVTXJF893iL3nV_CzgaRJ/view?usp=drive_link",
-    (3,12,9): "  https://drive.google.com/file/d/1w69XCIBm3u6XVTXJF893iL3nV_CzgaRJ/view?usp=drive_link",
-    (9,12,3): "  https://drive.google.com/file/d/1w69XCIBm3u6XVTXJF893iL3nV_CzgaRJ/view?usp=drive_link",
-    (15,8,11): "  https://drive.google.com/file/d/14eTveJvncg3FRsOlGqBuiDD1Vd885BcE/view?usp=drive_link",
-    (9,15,6): "  https://drive.google.com/file/d/18wj_PCzN7ZEaUvfmGiDW2AttFdY15snQ/view?usp=drive_link",
-    (6,17,11): "  https://drive.google.com/file/d/18wj_PCzN7ZEaUvfmGiDW2AttFdY15snQ/view?usp=drive_link",
-    (12,19,7): "  https://drive.google.com/file/d/1RYUBW4pCeSmsXwcjjTLiWdXHWP1uud2z/view?usp=drive_link",
-    (21,4,10): "  https://drive.google.com/file/d/1O27XG5pSIcGbfsNSQILNTbNVdXxYbf5Z/view?usp=drive_link",
-    (12,16,4): "  https://drive.google.com/file/d/12EhO882TN6FFZNkV1LV18Gzy6SGTbJaF/view?usp=drive_link",
-    (3,22,19): "  https://drive.google.com/file/d/1BBgsTpA_twkhsgAly9i3DtR6fseIMlRa/view?usp=drive_link",
-    (21,10,16): "  https://drive.google.com/file/d/1unFYU8JlQPhYPmFgLlaRpDwX49TBP2WE/view?usp=drive_link",
-    (6,8,20): "  https://drive.google.com/file/d/1SdzrR0vieHPZsPI4oxAynQ8KUgN2wYkK/view?usp=drive_link",
-    (3,7,22): "  https://drive.google.com/file/d/1dM0z8LpAgNZEO2bViZXiJBQssG1MmFZh/view?usp=drive_link",
-    (9,3,21): "  https://drive.google.com/file/d/15pb7irKooMODIvkGacYGNQbGgngdp_w-/view?usp=drive_link",
-    (21,7,13): "  https://drive.google.com/file/d/1lPwcqfBzC9gUNdC_10QYPavb3v3N-YIS/view?usp=drive_link",
-    (18,6,15): "  https://drive.google.com/file/d/1PWq5Vf6nBrL0eZPWXJa4SmLHsdbJIoKc/view?usp=drive_link",
-    (6,20,14): "  https://drive.google.com/file/d/1kugwosiU6g31pPujfCZfSo9WGDouzIJ6/view?usp=drive_link",
-    (21,10,7): "  https://drive.google.com/file/d/1vl2gBjs_jQBDHakFJBsHr4uU7OaGsPnn/view?usp=drive_link",
-    (3,13,10): "  https://drive.google.com/file/d/10_7IQ-bHmJnmmzYLwpF06NDKlRhavJUV/view?usp=drive_link",
-    (12,18,3): "  https://drive.google.com/file/d/1e1xcWuo1uYHDLYGJGkzhP1niun92kUUP/view?usp=drive_link",
-    (18,3,12): "  https://drive.google.com/file/d/1e1xcWuo1uYHDLYGJGkzhP1niun92kUUP/view?usp=drive_link",
-    (6,14,8): "  https://drive.google.com/file/d/1WC9HbCl6PfDasDX1uYM6qcF7nvFO8JcS/view?usp=drive_link",
+    (9,9,18): "https://drive.google.com/file/d/1QaMYUJv--n8iLwseG8_MAgz79dggEgg6/view?usp=drive_link",
+    (9,18,9): "https://drive.google.com/file/d/1uRuiDM-csTgk6SGweSkhbGT20yfK1kXd/view?usp=drive_link",
+    (18,9,9): "https://drive.google.com/file/d/10kDSS349TSu9eYaiCo61uWVjx11WOWRA/view?usp=drive_link",
+    (6,5,17): "https://drive.google.com/file/d/1IOKcMbpaRniLBmPL8s-anCwi1eBrr_O9/view?usp=drive_link",
+    (15,20,5): "https://drive.google.com/file/d/1t3mCNby-NCCBE4Pz_EFbuvXsJim9mpqG/view?usp=drive_link",
+    (15,5,8): "https://drive.google.com/file/d/161NMgmh9KDcrK0og17JrHBSloSNYvNmz/view?usp=drive_link",
+    (3,9,12): "https://drive.google.com/file/d/1w69XCIBm3u6XVTXJF893iL3nV_CzgaRJ/view?usp=drive_link",
+    (3,12,9): "https://drive.google.com/file/d/1w69XCIBm3u6XVTXJF893iL3nV_CzgaRJ/view?usp=drive_link",
+    (9,12,3): "https://drive.google.com/file/d/1w69XCIBm3u6XVTXJF893iL3nV_CzgaRJ/view?usp=drive_link",
+    (15,8,11): "https://drive.google.com/file/d/14eTveJvncg3FRsOlGqBuiDD1Vd885BcE/view?usp=drive_link",
+    (9,15,6): "https://drive.google.com/file/d/18wj_PCzN7ZEaUvfmGiDW2AttFdY15snQ/view?usp=drive_link",
+    (6,17,11): "https://drive.google.com/file/d/18wj_PCzN7ZEaUvfmGiDW2AttFdY15snQ/view?usp=drive_link",
+    (12,19,7): "https://drive.google.com/file/d/1RYUBW4pCeSmsXwcjjTLiWdXHWP1uud2z/view?usp=drive_link",
+    (21,4,10): "https://drive.google.com/file/d/1O27XG5pSIcGbfsNSQILNTbNVdXxYbf5Z/view?usp=drive_link",
+    (12,16,4): "https://drive.google.com/file/d/12EhO882TN6FFZNkV1LV18Gzy6SGTbJaF/view?usp=drive_link",
+    (3,22,19): "https://drive.google.com/file/d/1BBgsTpA_twkhsgAly9i3DtR6fseIMlRa/view?usp=drive_link",
+    (21,10,16): "https://drive.google.com/file/d/1unFYU8JlQPhYPmFgLlaRpDwX49TBP2WE/view?usp=drive_link",
+    (6,8,20): "https://drive.google.com/file/d/1SdzrR0vieHPZsPI4oxAynQ8KUgN2wYkK/view?usp=drive_link",
+    (3,7,22): "https://drive.google.com/file/d/1dM0z8LpAgNZEO2bViZXiJBQssG1MmFZh/view?usp=drive_link",
+    (9,3,21): "https://drive.google.com/file/d/15pb7irKooMODIvkGacYGNQbGgngdp_w-/view?usp=drive_link",
+    (21,7,13): "https://drive.google.com/file/d/1lPwcqfBzC9gUNdC_10QYPavb3v3N-YIS/view?usp=drive_link",
+    (18,6,15): "https://drive.google.com/file/d/1PWq5Vf6nBrL0eZPWXJa4SmLHsdbJIoKc/view?usp=drive_link",
+    (6,20,14): "https://drive.google.com/file/d/1kugwosiU6g31pPujfCZfSo9WGDouzIJ6/view?usp=drive_link",
+    (21,10,7): "https://drive.google.com/file/d/1vl2gBjs_jQBDHakFJBsHr4uU7OaGsPnn/view?usp=drive_link",
+    (3,13,10): "https://drive.google.com/file/d/10_7IQ-bHmJnmmzYLwpF06NDKlRhavJUV/view?usp=drive_link",
+    (12,18,3): "https://drive.google.com/file/d/1e1xcWuo1uYHDLYGJGkzhP1niun92kUUP/view?usp=drive_link",
+    (18,3,12): "https://drive.google.com/file/d/1e1xcWuo1uYHDLYGJGkzhP1niun92kUUP/view?usp=drive_link",
+    (6,14,8): "https://drive.google.com/file/d/1WC9HbCl6PfDasDX1uYM6qcF7nvFO8JcS/view?usp=drive_link",
 }
 
 # ——— кнопки ———
@@ -414,7 +414,7 @@ start_keyboard = ReplyKeyboardMarkup(
 
 subscribe_button = InlineKeyboardMarkup(
     inline_keyboard=[
-        [InlineKeyboardButton(text="Подписаться", url="  https://t.me/Master_Mystic  ")]
+        [InlineKeyboardButton(text="Подписаться", url="https://t.me/Master_Mystic")]
     ]
 )
 
@@ -490,8 +490,13 @@ async def handle_date(message: Message):
         await message.reply("⚠️ Введите корректную дату.")
         return
 
-    # Сохраняем дату как последнюю
-    user_last_birthday[message.from_user.id] = f"{day}.{month}.{year}"
+    # Сохраняем дату
+    user_id = message.from_user.id
+    user_last_birthday[user_id] = f"{day}.{month}.{year}"
+
+    # Отмена предыдущего уведомления, если есть
+    if user_id in pending_notifications:
+        pending_notifications[user_id].cancel()
 
     # === БЕСПЛАТНЫЙ АНАЛИЗ ===
     tail_triplet = calc_tail(day, month, year)
@@ -513,66 +518,61 @@ async def handle_date(message: Message):
         parse_mode="HTML"
     )
 
-    # Запланировать отправку сообщения через 5 минут
-    asyncio.create_task(send_bracelet_message(message.from_user.id))
-
-# ——— Функция для отправки сообщения о браслете через 5 минут ———
-async def send_bracelet_message(user_id: int):
-    await asyncio.sleep(300)  # 5 минут = 300 секунд
-    
-    bracelet_keyboard = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="ХОЧУ ЗАКАЗАТЬ БРАСЛЕТ", callback_data="want_bracelet")],
-            [InlineKeyboardButton(text="Я ПОДУМАЮ", callback_data="think_bracelet")]
-        ]
-    )
-    
-    try:
-        await bot.send_message(
-            chat_id=user_id,
-            text=(
-                "Теперь ты видишь что тянет тебя вниз.\n\n"
-                "Но Кармический хвост - это только начало.\n\n"
-                "Чтобы нейтрализовать свой Кармический хвост нужен физический носитель энергии - браслет из правильных камней.\n\n"
-                "Он будет работать 24/7 как щит и усилитель + откроет канал для поддержки.\n\n"
-                "✅ 89% отметили прилив энергии в первую неделю\n\n"
-                "Хочешь получить свой персональный талисман?"
-            ),
-            reply_markup=bracelet_keyboard
+    # Запускаем таймер на 5 минут
+    async def delayed_message():
+        await asyncio.sleep(300)  # 5 минут
+        bracelet_keyboard = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [InlineKeyboardButton(text="💎 ХОЧУ ЗАКАЗАТЬ БРАСЛЕТ", callback_data="want_bracelet")],
+                [InlineKeyboardButton(text="⏸ Я ПОДУМАЮ", callback_data="think_bracelet")]
+            ]
         )
-    except Exception as e:
-        logger.error(f"Ошибка отправки сообщения о браслете пользователю {user_id}: {e}")
+        await message.answer(
+            "Теперь ты видишь, что тянет тебя вниз.\n\n"
+            "Но Кармический хвост — это только начало.\n\n"
+            "Чтобы нейтрализовать свой Кармический хвост, нужен физический носитель энергии — <b>браслет из правильных камней</b>.\n\n"
+            "Он будет работать 24/7 как щит и усилитель + откроет канал для поддержки.\n\n"
+            "✅ <i>89% отметили прилив энергии в первую неделю</i>\n\n"
+            "Хочешь получить свой персональный талисман?",
+            reply_markup=bracelet_keyboard,
+            parse_mode="HTML"
+        )
 
-# ——— Обработка "ХОЧУ ЗАКАЗАТЬ БРАСЛЕТ" ———
+    # Запускаем задачу
+    task = asyncio.create_task(delayed_message())
+    pending_notifications[user_id] = task
+
+# ——— ОБРАБОТКА "ХОЧУ ЗАКАЗАТЬ БРАСЛЕТ" ———
 @dp.callback_query(F.data == "want_bracelet")
-async def want_bracelet_handler(callback):
-    details_button = InlineKeyboardMarkup(
+async def want_bracelet(callback: types.CallbackQuery):
+    contact_button = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="УТОЧНИТЬ ДЕТАЛИ", url="https://t.me/Mattrehka")]
+            [InlineKeyboardButton(text="💬 УТОЧНИТЬ ДЕТАЛИ", url="https://t.me/Mattrehka")]
         ]
     )
-    
     await callback.message.edit_text(
-        "Отлично! Для того, чтобы master mystic начал изготавливать для тебя браслет, "
-        "нужно уточнить некоторые детали. Жми \"УТОЧНИТЬ ДЕТАЛИ\" и вводи свою дату рождения. "
-        "В течение часа master mystic свяжется с тобой и скажет, какие камни подойдут для твоего Кармического хвоста. "
+        "Отлично! Для того, чтобы <b>Master Mystic</b> начал изготавливать для тебя браслет, нужно уточнить некоторые детали.\n\n"
+        "Жми <b>«УТОЧНИТЬ ДЕТАЛИ»</b> и введи свою дату рождения.\n\n"
+        "В течение часа <b>Master Mystic</b> свяжется с тобой и скажет, какие камни подойдут для твоего Кармического хвоста.\n\n"
         "Вы обсудите детали по дизайну и доставке.",
-        reply_markup=details_button
+        reply_markup=contact_button,
+        parse_mode="HTML"
     )
 
-# ——— Обработка "Я ПОДУМАЮ" (для браслета) ———
+# ——— ОБРАБОТКА "Я ПОДУМАЮ" (нейропрограммирование) ———
 @dp.callback_query(F.data == "think_bracelet")
-async def think_bracelet_handler(callback):
-    await callback.message.edit_text(
-        "✨ <b>Ты делаешь правильный выбор, принимая своё время.</b>\n\n"
-        "🔮 <i>Кармический хвост</i> — это не просто число. Это твой внутренний компас, указывающий путь к свободе.\n\n"
-        "💫 Иногда нам нужно время, чтобы осознать истину. Но помни:\n"
-        "• Энергия хвоста продолжает тянуть тебя вниз\n"
-        "• Возможности не ждут вечно\n"
-        "• Поддержка всегда рядом\n\n"
-        "🌿 Когда будешь готов — просто напиши дату рождения снова.\n"
-        "Мы всегда здесь, чтобы помочь тебе обрести гармонию.",
-        parse_mode="HTML"
+async def think_bracelet(callback: types.CallbackQuery):
+    # Используем "всплывающее окно" через alert
+    await callback.answer(
+        text=(
+            "✨ Ты уже сделал важный шаг — ты видишь, что мешает.\n\n"
+            "Иногда разум говорит «подожду», но душа уже знает — <b>сейчас</b>.\n\n"
+            "Ты заслуживаешь защиты.\n"
+            "Ты заслуживаешь силы.\n"
+            "И ты уже готов к переменам.\n\n"
+            "— Master Mystic"
+        ),
+        show_alert=True
     )
 
 # ——— ОБРАБОТКА "ГОТОВО" — ПОЛНЫЙ АНАЛИЗ ———
@@ -610,15 +610,15 @@ async def send_contact(callback):
     # Клиенту
     await callback.message.edit_text(
         "Спасибо за доверие 🙏. В течение 24 часов я пришлю вам результат. "
-        "Если у вас будут вопросы, пишите в личные сообщения <a href='https://t.me/Mattrehka  '>Master Mystic</a>",
+        "Если у вас будут вопросы, пишите в личные сообщения <a href='https://t.me/Mattrehka'>Master Mystic</a>",
         parse_mode="HTML"
     )
 
-# ——— обработка "Я подумаю" ———
+# ——— обработка "Я подумаю" (в полном анализе) ———
 @dp.callback_query(F.data == "think")
 async def think_callback(callback):
     await callback.message.edit_text(
-        "Хорошо. А пока можешь подписаться на канал <a href='https://t.me/Master_Mystic  '>Master Mystic</a>. "
+        "Хорошо. А пока можешь подписаться на канал <a href='https://t.me/Master_Mystic'>Master Mystic</a>. "
         "Многие, кто получил свой хвост, уже в канале. Присоединяйся — там живёт самая сильная энергия.",
         reply_markup=None,
         parse_mode="HTML"
