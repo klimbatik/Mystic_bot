@@ -13,7 +13,11 @@ if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN не установлен в переменных окружения")
 
 # 🌐 URL вебхука (Render)
-WEBHOOK_URL = f"https://{os.getenv('RENDER_EXTERNAL_HOSTNAME')}/webhook"
+RENDER_EXTERNAL_HOSTNAME = os.getenv("RENDER_EXTERNAL_HOSTNAME")
+if RENDER_EXTERNAL_HOSTNAME:
+    WEBHOOK_URL = f"https://{RENDER_EXTERNAL_HOSTNAME}/webhook"
+else:
+    WEBHOOK_URL = None  # для локального запуска
 
 # 🛠️ Настройка логов
 logging.basicConfig(level=logging.INFO)
@@ -422,24 +426,32 @@ subscribe_button = InlineKeyboardMarkup(
 @dp.message(Command("start"))
 async def start(message: Message):
     logger.info(f"Пользователь {message.from_user.id} начал чат")
-    await message.answer(
-        "Привет! Я — бот <b>Master Mystic</b> 🌿\n\n"
-        "Я помогу рассчитать твой <i>Кармический хвост</i> и узнать главные задачи души, которые ты притащил(а) из прошлой жизни. Что мешает тебе двигаться вперёд.\n\n"
-        "Это бесплатно.\n\n"
-        "Введите дату рождения в формате <b>ДД.ММ.ГГГГ</b>",
-        reply_markup=start_keyboard
+    await bot.send_message(
+        chat_id=message.from_user.id,
+        text=(
+            "Привет! Я — бот <b>Master Mystic</b> 🌿\n\n"
+            "Я помогу рассчитать твой <i>Кармический хвост</i> и узнать главные задачи души, которые ты притащил(а) из прошлой жизни. Что мешает тебе двигаться вперёд.\n\n"
+            "Это бесплатно.\n\n"
+            "Введите дату рождения в формате <b>ДД.ММ.ГГГГ</b>"
+        ),
+        reply_markup=start_keyboard,
+        parse_mode="HTML"
     )
 
 # ——— обработчик "Подписаться на канал Master Mystic" ———
 @dp.message(F.text == "Подписаться на канал Master Mystic")
 async def subscribe(message: Message):
-    await message.answer(
-        "🔹 Подписывайся на канал, где я делюсь:\n"
-        "• Кейсами клиентов\n"
-        "• Энергетикой камней\n"
-        "• Как менять жизнь через матрицу судьбы\n\n"
-        "Будет интересно!",
-        reply_markup=subscribe_button
+    await bot.send_message(
+        chat_id=message.from_user.id,
+        text=(
+            "🔹 Подписывайся на канал, где я делюсь:\n"
+            "• Кейсами клиентов\n"
+            "• Энергетикой камней\n"
+            "• Как менять жизнь через матрицу судьбы\n\n"
+            "Будет интересно!"
+        ),
+        reply_markup=subscribe_button,
+        parse_mode="HTML"
     )
 
 # ——— обработчик "Сделать полный анализ" ———
@@ -451,20 +463,24 @@ async def full_analysis(message: Message):
             [InlineKeyboardButton(text="⏸ Я подумаю", callback_data="think")]
         ]
     )
-    await message.answer(
-        "<b>Отлично! В полном анализе ты узнаешь:</b>\n"
-        "● Денежный код\n"
-        "● Призвание и путь души\n"
-        "● Кармические задачи\n"
-        "● Зоны силы и слабости\n\n"
-        "<b>💲 Полный анализ по Матрице судьбы будет стоить 1000₽.</b>\n\n"
-        "Это не гадание, это анализ по дате рождения. Хочешь получить? Жми «Продолжить» — и я пришлю реквизиты для оплаты. После оплаты — в течение 24 часов пришлю подробный расчёт.",
-        reply_markup=payment_button
+    await bot.send_message(
+        chat_id=message.from_user.id,
+        text=(
+            "<b>Отлично! В полном анализе ты узнаешь:</b>\n"
+            "● Денежный код\n"
+            "● Призвание и путь души\n"
+            "● Кармические задачи\n"
+            "● Зоны силы и слабости\n\n"
+            "<b>💲 Полный анализ по Матрице судьбы будет стоить 1000₽.</b>\n\n"
+            "Это не гадание, это анализ по дате рождения. Хочешь получить? Жми «Продолжить» — и я пришлю реквизиты для оплаты. После оплаты — в течение 24 часов пришлю подробный расчёт."
+        ),
+        reply_markup=payment_button,
+        parse_mode="HTML"
     )
 
 # ——— обработка "Продолжить" ———
 @dp.callback_query(F.data == "pay")
-async def send_payment_info(callback):
+async def send_payment_info(callback: types.CallbackQuery):
     payment_info = (
         "💳 <b>Реквизиты для оплаты:</b>\n\n"
         "Сбербанк: <code>4276 5400 2708 8180</code>\n\n"
@@ -480,28 +496,33 @@ async def send_payment_info(callback):
 # ——— СОХРАНЕНИЕ ДАТЫ ПРИ ВВОДЕ ———
 @dp.message(F.text.regexp(r"^\s*(\d{2})\.\s*(\d{2})\.\s*(\d{4})\s*$"))
 async def handle_date(message: Message):
-    logger.info(f"Получено сообщение: {message.text}")
+    logger.info(f"Пользователь {message.from_user.id} ввёл дату: '{message.text}'")
+
     try:
-        # Убираем пробелы и парсим
-        text = message.text.strip()
-        day, month, year = map(int, text.split("."))
+        day, month, year = map(int, message.text.strip().split("."))
     except Exception as e:
         logger.error(f"Ошибка парсинга даты: {e}")
-        await message.reply("⚠️ Ошибка формата даты. Введите в формате ДД.ММ.ГГГГ.")
+        await bot.send_message(
+            chat_id=message.from_user.id,
+            text="⚠️ Ошибка формата даты. Введите в формате ДД.ММ.ГГГГ.",
+            parse_mode="HTML"
+        )
         return
 
     if not (1 <= day <= 31) or not (1 <= month <= 12) or year < 1900:
-        await message.reply("⚠️ Введите корректную дату.")
+        await bot.send_message(
+            chat_id=message.from_user.id,
+            text="⚠️ Введите корректную дату.",
+            parse_mode="HTML"
+        )
         return
 
     user_id = message.from_user.id
     user_last_birthday[user_id] = f"{day}.{month}.{year}"
 
-    # Отмена предыдущего уведомления
     if user_id in pending_notifications:
         pending_notifications[user_id].cancel()
 
-    # === БЕСПЛАТНЫЙ АНАЛИЗ ===
     tail_triplet = calc_tail(day, month, year)
     description = describe_tail(tail_triplet)
     detailed_text = DETAILED_DESCRIPTIONS.get(tail_triplet, "Подробное описание пока недоступно.")
@@ -513,30 +534,35 @@ async def handle_date(message: Message):
         ]
     )
 
-    await message.answer(
-        f"🔮 <b>Твой кармический хвост:</b> {tail_triplet[0]}-{tail_triplet[1]}-{tail_triplet[2]}\n"
-        f"📌 {description}\n\n"
-        f"{detailed_text}",
+    await bot.send_message(
+        chat_id=message.from_user.id,
+        text=(
+            f"🔮 <b>Твой кармический хвост:</b> {tail_triplet[0]}-{tail_triplet[1]}-{tail_triplet[2]}\n"
+            f"📌 {description}\n\n"
+            f"{detailed_text}"
+        ),
         reply_markup=inline_keyboard,
         parse_mode="HTML"
     )
 
-    # Запускаем таймер на 1 минуту
     async def delayed_message():
-        await asyncio.sleep(60)  # 1 минута
+        await asyncio.sleep(60)
         bracelet_keyboard = InlineKeyboardMarkup(
             inline_keyboard=[
                 [InlineKeyboardButton(text="💎 ХОЧУ ЗАКАЗАТЬ БРАСЛЕТ", callback_data="want_bracelet")],
                 [InlineKeyboardButton(text="⏸ Я ПОДУМАЮ", callback_data="think_bracelet")]
             ]
         )
-        await message.answer(
-            "Теперь ты видишь, что тянет тебя вниз.\n\n"
-            "Но Кармический хвост — это только начало.\n\n"
-            "Чтобы нейтрализовать свой Кармический хвост, нужен физический носитель энергии — <b>браслет из правильных камней</b>.\n\n"
-            "Он будет работать 24/7 как щит и усилитель + откроет канал для поддержки.\n\n"
-            "✅ <i>89% отметили прилив энергии в первую неделю</i>\n\n"
-            "Хочешь получить свой персональный талисман?",
+        await bot.send_message(
+            chat_id=message.from_user.id,
+            text=(
+                "Теперь ты видишь, что тянет тебя вниз.\n\n"
+                "Но Кармический хвост — это только начало.\n\n"
+                "Чтобы нейтрализовать свой Кармический хвост, нужен физический носитель энергии — <b>браслет из правильных камней</b>.\n\n"
+                "Он будет работать 24/7 как щит и усилитель + откроет канал для поддержки.\n\n"
+                "✅ <i>89% отметили прилив энергии в первую неделю</i>\n\n"
+                "Хочешь получить свой персональный талисман?"
+            ),
             reply_markup=bracelet_keyboard,
             parse_mode="HTML"
         )
@@ -572,14 +598,17 @@ async def think_bracelet(callback: types.CallbackQuery):
 
 # ——— ОБРАБОТКА "ГОТОВО" — ПОЛНЫЙ АНАЛИЗ ———
 @dp.callback_query(F.data == "ready")
-async def send_contact(callback):
+async def send_contact(callback: types.CallbackQuery):
     user_id = callback.from_user.id
     user = callback.from_user
 
     birth_date = user_last_birthday.get(user_id)
-
     if not birth_date:
-        await callback.message.answer("❌ Вы не вводили дату рождения.")
+        await bot.send_message(
+            chat_id=user_id,
+            text="❌ Вы не вводили дату рождения.",
+            parse_mode="HTML"
+        )
         await callback.message.edit_reply_markup(reply_markup=None)
         return
 
@@ -598,7 +627,11 @@ async def send_contact(callback):
         logger.info(f"✅ Данные клиента {user_id} отправлены админу")
     except Exception as e:
         logger.error(f"❌ Ошибка отправки админу: {e}")
-        await callback.message.answer("❌ Не удалось отправить данные. Напишите мне в личные сообщения.")
+        await bot.send_message(
+            chat_id=user_id,
+            text="❌ Не удалось отправить данные. Напишите мне в личные сообщения.",
+            parse_mode="HTML"
+        )
 
     await callback.message.edit_text(
         "Спасибо за доверие 🙏. В течение 24 часов я пришлю вам результат. "
@@ -608,7 +641,7 @@ async def send_contact(callback):
 
 # ——— обработка "Я подумаю" (в полном анализе) ———
 @dp.callback_query(F.data == "think")
-async def think_callback(callback):
+async def think_callback(callback: types.CallbackQuery):
     await callback.message.edit_text(
         "Хорошо. А пока можешь подписаться на канал <a href='https://t.me/Master_Mystic'>Master Mystic</a>. "
         "Многие, кто получил свой хвост, уже в канале. Присоединяйся — там живёт самая сильная энергия.",
@@ -618,7 +651,7 @@ async def think_callback(callback):
 
 # ——— обработка "СДЕЛАТЬ ПОЛНЫЙ АНАЛИЗ" ———
 @dp.callback_query(F.data == "full_analysis")
-async def callback_full_analysis(callback):
+async def callback_full_analysis(callback: types.CallbackQuery):
     payment_button = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="✅ Продолжить", callback_data="pay")],
@@ -633,7 +666,8 @@ async def callback_full_analysis(callback):
         "● Зоны силы и слабости\n\n"
         "<b>💲 Полный анализ по Матрице судьбы будет стоить 1000₽.</b>\n\n"
         "Это не гадание, это анализ по дате рождения. Хочешь получить? Жми «Продолжить» — и я пришлю реквизиты для оплаты. После оплаты — в течение 24 часов пришлю подробный расчёт.",
-        reply_markup=payment_button
+        reply_markup=payment_button,
+        parse_mode="HTML"
     )
 
 # ——— запуск бота ———
@@ -641,15 +675,18 @@ async def main():
     from aiohttp import web
     from aiogram.webhook.aiohttp_server import SimpleRequestHandler
 
-    try:
-        webhook_info = await bot.get_webhook_info()
-        if webhook_info.url != WEBHOOK_URL:
-            await bot.set_webhook(WEBHOOK_URL)
-            logger.info(f"✅ Webhook установлен: {WEBHOOK_URL}")
-        else:
-            logger.info(f"✅ Webhook уже установлен: {WEBHOOK_URL}")
-    except Exception as e:
-        logger.error(f"❌ Ошибка при установке webhook: {e}")
+    if WEBHOOK_URL:
+        try:
+            webhook_info = await bot.get_webhook_info()
+            if webhook_info.url != WEBHOOK_URL:
+                await bot.set_webhook(WEBHOOK_URL)
+                logger.info(f"✅ Webhook установлен: {WEBHOOK_URL}")
+            else:
+                logger.info(f"✅ Webhook уже установлен: {WEBHOOK_URL}")
+        except Exception as e:
+            logger.error(f"❌ Ошибка при установке webhook: {e}")
+    else:
+        logger.info("⚠️ Вебхук не установлен (локальный режим)")
 
     app = web.Application()
     SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path="/webhook")
