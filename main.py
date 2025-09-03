@@ -693,14 +693,18 @@ async def callback_full_analysis(callback: CallbackQuery):
         parse_mode="HTML"
     )
 
-# ——— Эндпоинт /health —— ДЛЯ UPTIMEROBOT ——
+# ——— Эндпоинты для Render ———
 async def health(request):
     return web.Response(text="OK", status=200)
+
+async def root(request):
+    return web.Response(text="Bot is alive", status=200)
 
 # ——— запуск бота ———
 async def main():
     from aiogram.webhook.aiohttp_server import SimpleRequestHandler
 
+    # Установка вебхука
     if WEBHOOK_URL:
         try:
             webhook_info = await bot.get_webhook_info()
@@ -712,11 +716,19 @@ async def main():
         except Exception as e:
             logger.error(f"❌ Ошибка при установке webhook: {e}")
     else:
-        logger.info("⚠️ Вебхук не установлен (локальный режим)")
+        logger.warning("⚠️ RENDER_EXTERNAL_HOSTNAME не задан — вебхук не установлен")
 
+    # Создание веб-приложения
     app = web.Application()
+    
+    # Регистрация обработчика вебхука
     SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path="/webhook")
+    
+    # Добавление эндпоинтов
     app.router.add_get('/health', health)
+    app.router.add_get('/', root)  # Главная страница
+    
+    # Запуск сервера
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, host="0.0.0.0", port=int(os.getenv("PORT", 10000)))
