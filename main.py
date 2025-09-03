@@ -681,7 +681,7 @@ async def callback_full_analysis(callback: CallbackQuery):
             [InlineKeyboardButton(text="⏸ Я подумаю", callback_data="think")]
         ]
     )
-    await callback.message.edit_text(
+    await callback.message.send_message(
         "<b>Отлично! В полном анализе ты узнаешь:</b>\n"
         "● Денежный код\n"
         "● Призвание и путь души\n"
@@ -742,3 +742,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
