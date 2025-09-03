@@ -1,4 +1,4 @@
-﻿import os
+import os
 import asyncio
 import logging
 from aiogram import Bot, Dispatcher, F
@@ -6,8 +6,6 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 from aiogram.filters import Command
 from aiogram import types
-from aiohttp import web
-
 
 # 🔐 Переменные окружения
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -473,7 +471,7 @@ async def full_analysis(message: Message):
             "● Призвание и путь души\n"
             "● Кармические задачи\n"
             "● Зоны силы и слабости\n\n"
-            "<b>💲 Полный анализ по Матрице судьбы будет стоить 1000₽.</b>\n\n"
+            "<b>💲 Полный анализ по Матрице судьбы будет стоить 2000₽.</b>\n\n"
             "Это не гадание, это анализ по дате рождения. Хочешь получить? Жми «Продолжить» — и я пришлю реквизиты для оплаты. После оплаты — в течение 24 часов пришлю подробный расчёт."
         ),
         reply_markup=payment_button,
@@ -666,17 +664,25 @@ async def callback_full_analysis(callback: types.CallbackQuery):
         "● Призвание и путь души\n"
         "● Кармические задачи\n"
         "● Зоны силы и слабости\n\n"
-        "<b>💲 Полный анализ по Матрице судьбы будет стоить 1000₽.</b>\n\n"
+        "<b>💲 Полный анализ по Матрице судьбы будет стоить 2000₽.</b>\n\n"
         "Это не гадание, это анализ по дате рождения. Хочешь получить? Жми «Продолжить» — и я пришлю реквизиты для оплаты. После оплаты — в течение 24 часов пришлю подробный расчёт.",
         reply_markup=payment_button,
         parse_mode="HTML"
     )
 
+# ——— Обработка ввода текста: "Сделать полный анализ" или "Хочу браслет" ———
+@dp.message(F.text.in_(["Сделать полный анализ", "Хочу браслет"]))
+async def handle_manual_commands(message: Message):
+    if message.text == "Сделать полный анализ":
+        await full_analysis(message)
+    elif message.text == "Хочу браслет":
+        await want_bracelet(types.CallbackQuery(data="want_bracelet", from_user=message.from_user, message=message))
 
-# ——— ЭНДПОИНТ /health ДЛЯ UPTIMEROBOT ———
+# ——— Эндпоинт /health —— ДЛЯ UPTIMEROBOT ——
+from aiohttp import web
+
 async def health(request):
     return web.Response(text="OK", status=200)
-
 
 # ——— запуск бота ———
 async def main():
@@ -697,7 +703,7 @@ async def main():
 
     app = web.Application()
     SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path="/webhook")
-    app.router.add_get('/health', health)  # ← Этот эндпоинт теперь работает!
+    app.router.add_get('/health', health)
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, host="0.0.0.0", port=int(os.getenv("PORT", 10000)))
@@ -708,7 +714,6 @@ async def main():
         await asyncio.sleep(3600)
     finally:
         await runner.cleanup()
-
 
 if __name__ == "__main__":
     asyncio.run(main())
