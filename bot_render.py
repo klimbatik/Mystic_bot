@@ -520,7 +520,7 @@ async def handle_date(message: Message):
 
     # Запускаем таймер на 5 минут
     async def delayed_message():
-        await asyncio.sleep(300)  # 5 минут
+        await asyncio.sleep(60)  # 1 минут
         bracelet_keyboard = InlineKeyboardMarkup(
             inline_keyboard=[
                 [InlineKeyboardButton(text="💎 ХОЧУ ЗАКАЗАТЬ БРАСЛЕТ", callback_data="want_bracelet")],
@@ -674,3 +674,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
