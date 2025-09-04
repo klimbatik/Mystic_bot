@@ -1,6 +1,8 @@
 import os
 import asyncio
 import logging
+import json
+from datetime import datetime, timedelta
 from aiogram import Bot, Dispatcher, F
 from aiogram.client.default import DefaultBotProperties
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, CallbackQuery
@@ -33,6 +35,63 @@ ADMIN_ID = 1030370280
 # Хранение последней даты по пользователю
 user_last_birthday = {}  # {user_id: "дата"}
 pending_notifications = {}  # {user_id: task} — для отмены уведомлений
+
+# 📊 Статистика: количество пользователей
+user_count = 0
+active_users = set()
+
+# 📅 Время отправки отчёта (UTC). 10 UTC = 13:00 МСК
+REPORT_HOUR = 10  # Меняй: 7 → 10:00 МСК, 10 → 13:00, 15 → 18:00, 18 → 21:00
+
+# 📁 Загружаем статистику при запуске
+try:
+    with open("stats.json", "r", encoding="utf-8") as f:
+        data = json.load(f)
+        user_count = data.get("user_count", 0)
+        active_users = set(data.get("active_users", []))
+    logger.info(f"📊 Статистика загружена: {user_count} пользователей")
+except FileNotFoundError:
+    logger.info("📊 Файл статистики не найден. Начинаем с нуля.")
+
+# 💾 Сохраняем статистику в файл
+def save_stats():
+    with open("stats.json", "w", encoding="utf-8") as f:
+        json.dump({
+            "user_count": user_count,
+            "active_users": list(active_users)
+        }, f, ensure_ascii=False, indent=2)
+
+# 📬 Отправка ежедневного отчёта
+async def send_daily_report():
+    while True:
+        now = asyncio.get_event_loop().time()
+        current = datetime.fromtimestamp(now)
+        
+        # Вычисляем следующее время отправки (в REPORT_HOUR:00 UTC)
+        next_run = current.replace(hour=REPORT_HOUR, minute=0, second=0, microsecond=0)
+        if next_run <= current:
+            next_run += timedelta(days=1)
+
+        seconds_until = (next_run - current).total_seconds()
+        logger.info(f"⏰ Отчёт будет отправлен через {seconds_until:.0f} секунд (в {next_run.strftime('%H:%M')} UTC)")
+
+        await asyncio.sleep(seconds_until)
+
+        try:
+            await bot.send_message(
+                chat_id=ADMIN_ID,
+                text=(
+                    "📈 <b>Ежедневный отчёт</b>\n"
+                    f"📅 {current.strftime('%d.%m.%Y')}\n"
+                    f"👥 Всего пользователей: <b>{user_count}</b>\n"
+                    "———\n"
+                    "Бот работает стабильно 🚀"
+                ),
+                parse_mode="HTML"
+            )
+            logger.info("📬 Ежедневный отчёт отправлен")
+        except Exception as e:
+            logger.error(f"❌ Не удалось отправить отчёт: {e}")
 
 # ——— функция нормализации ———
 def norm22(n: int) -> int:
@@ -411,7 +470,7 @@ PDF_LINKS = {
 start_keyboard = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="Сделать полный анализ")],
-        [KeyboardButton(text="Подписаться на канал Master Mystic")]
+        [KeyboardButton(text="О канале Master Mystic")]
     ],
     resize_keyboard=True
 )
@@ -425,7 +484,18 @@ subscribe_button = InlineKeyboardMarkup(
 # ——— команда /start ———
 @dp.message(Command("start"))
 async def start(message: Message):
-    logger.info(f"Пользователь {message.from_user.id} начал чат")
+    global user_count
+
+    user_id = message.from_user.id
+
+    # Если пользователь впервые — считаем его
+    if user_id not in active_users:
+        active_users.add(user_id)
+        user_count += 1
+        logger.info(f"🎯 Новый пользователь: {user_id}. Всего: {user_count}")
+        save_stats()  # Сохраняем в файл
+
+    logger.info(f"Пользователь {user_id} начал чат")
     await bot.send_message(
         chat_id=message.from_user.id,
         text=(
@@ -438,21 +508,35 @@ async def start(message: Message):
         parse_mode="HTML"
     )
 
+# ——— команда /stats — только для админа ———
+@dp.message(Command("stats"))
+async def show_stats(message: Message):
+    if message.from_user.id == ADMIN_ID:
+        await message.answer(
+            f"📊 <b>Статистика бота:</b>\n"
+            f"👥 Всего пользователей: <b>{user_count}</b>\n"
+            f"🔄 Уникальных за сессию: <b>{len(active_users)}</b>",
+            parse_mode="HTML"
+        )
+    else:
+        await message.answer("❌ У вас нет доступа к этой команде.")
+
 # ——— обработчик "Подписаться на канал Master Mystic" ———
 @dp.message(F.text == "Подписаться на канал Master Mystic")
 async def subscribe(message: Message):
     await bot.send_message(
-        chat_id=message.from_user.id,
-        text=(
-            "🔹 Подписывайся на канал, где я делюсь:\n"
-            "• Кейсами клиентов\n"
-            "• Энергетикой камней\n"
-            "• Как менять жизнь через матрицу судьбы\n\n"
-            "Будет интересно!"
-        ),
-        reply_markup=subscribe_button,
-        parse_mode="HTML"
-    )
+    chat_id=message.from_user.id,
+    text=(
+        "<b>🔹 Подписывайся на канал, где я делюсь не просто про камни и матрицу.</b>\n"
+        "Я показываю, как перезагрузить свою жизнь изнутри.\n\n"
+        "Здесь ты найдёшь:\n"
+        "• Разборы матриц судьбы — как в твоей дате рождения уже записано, почему деньги утекают, а любовь рушится\n"
+        "• Энергию камней, которые работают 24/7: не как украшение, а как талисман и защита\n"
+        "• Глубинные установки, которые ты притащил(а) из детства и прошлых жизней — и как их перепрограммировать"
+    ),
+    reply_markup=subscribe_button,
+    parse_mode="HTML"
+)
 
 # ——— обработчик "Сделать полный анализ" ———
 @dp.message(F.text == "Сделать полный анализ")
@@ -711,7 +795,7 @@ async def callback_full_analysis(callback: CallbackQuery):
             [InlineKeyboardButton(text="⏸ Я подумаю", callback_data="think")]
         ]
     )
-    await bot.send_message(  # ❗ ИСПРАВЛЕНО: не edit_text, а send_message
+    await bot.send_message(
         chat_id=callback.from_user.id,
         text=(
             "<b>Отлично! В полном анализе ты узнаешь:</b>\n"
@@ -736,6 +820,9 @@ async def root(request):
 # ——— запуск бота ———
 async def main():
     from aiogram.webhook.aiohttp_server import SimpleRequestHandler
+
+    # 🚀 Запуск фоновой задачи — ежедневный отчёт
+    asyncio.create_task(send_daily_report())
 
     if WEBHOOK_URL:
         try:
