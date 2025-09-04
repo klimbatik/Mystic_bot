@@ -521,8 +521,8 @@ async def show_stats(message: Message):
     else:
         await message.answer("❌ У вас нет доступа к этой команде.")
 
-# ——— обработчик "Подписаться на канал Master Mystic" ———
-@dp.message(F.text == "Подписаться на канал Master Mystic")
+# ——— обработчик "О канале Master Mystic" ———
+@dp.message(F.text == "О канале Master Mystic")
 async def subscribe(message: Message):
     await bot.send_message(
     chat_id=message.from_user.id,
@@ -854,3 +854,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
