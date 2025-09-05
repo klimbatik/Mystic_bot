@@ -14,15 +14,12 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN не установлен в переменных окружения")
 
-# 🌐 URL вебхука (для Render)
+# 🌐 URL вебхука (Render)
 RENDER_EXTERNAL_HOSTNAME = os.getenv("RENDER_EXTERNAL_HOSTNAME")
 if RENDER_EXTERNAL_HOSTNAME:
     WEBHOOK_URL = f"https://{RENDER_EXTERNAL_HOSTNAME}/webhook"
 else:
     WEBHOOK_URL = None  # для локального запуска
-
-# 🛠️ Порт (Render передаёт PORT через переменные окружения)
-PORT = int(os.getenv("PORT", 10000))
 
 # 🛠️ Настройка логов
 logging.basicConfig(level=logging.INFO)
@@ -35,15 +32,15 @@ dp = Dispatcher()
 # 👤 Твой Telegram ID
 ADMIN_ID = 1030370280
 
-# Хранение данных пользователей
+# Хранение последней даты по пользователю
 user_last_birthday = {}  # {user_id: "дата"}
 pending_notifications = {}  # {user_id: task} — для отмены уведомлений
 
 # 📊 Статистика
-user_count = 0
-daily_users = set()
+user_count = 0  # Всего пользователей за всё время
+daily_users = set()  # ID пользователей за сегодня
 
-# 💾 Загружаем статистику при запуске
+# 📁 Загружаем статистику при запуске
 try:
     with open("stats.json", "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -52,12 +49,12 @@ try:
         if saved_date == datetime.now().strftime("%Y-%m-%d"):
             daily_users = set(data.get("daily_users", []))
         else:
-            daily_users = set()
+            daily_users = set()  # Новый день — сброс
     logger.info(f"📊 Статистика загружена: {user_count} всего, {len(daily_users)} сегодня")
 except FileNotFoundError:
     logger.info("📊 Файл статистики не найден. Начинаем с нуля.")
 
-# 💾 Сохраняем статистику
+# 💾 Сохраняем статистику в файл
 def save_stats():
     with open("stats.json", "w", encoding="utf-8") as f:
         json.dump({
@@ -119,7 +116,7 @@ TAILS = {
 def describe_tail(triplet):
     return TAILS.get(triplet, "Неизвестный хвост")
 
-# ——— подробные описания ——— (исправлено: убрано дублирование)
+# ——— подробные описания ———
 DETAILED_DESCRIPTIONS = {
     (18,6,6): (
         "В прошлой жизни ты либо совершал любовные привороты, либо сам страдал от недостатка любви. "
@@ -464,7 +461,6 @@ async def start(message: Message):
         user_count += 1
         save_stats()
         logger.info(f"🎯 Новый пользователь: {user_id}. Всего: {user_count}, сегодня: {len(daily_users)}")
-
     await bot.send_message(
         chat_id=message.from_user.id,
         text=(
@@ -626,29 +622,7 @@ async def handle_date(message: Message):
     task = asyncio.create_task(delayed_message())
     pending_notifications[user_id] = task
 
-# ——— ОБРАБОТКА КНОПКИ "СДЕЛАТЬ ПОЛНЫЙ АНАЛИЗ" — отправляем новое сообщение ———
-@dp.callback_query(F.data == "full_analysis")
-async def callback_full_analysis(callback: CallbackQuery):
-    payment_button = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="✅ Продолжить", callback_data="pay")],
-            [InlineKeyboardButton(text="⏸ Я подумаю", callback_data="think")]
-        ]
-    )
-    await callback.message.answer(
-        "<b>Отлично! В полном анализе ты узнаешь:</b>\n"
-        "● Денежный код\n"
-        "● Призвание и путь души\n"
-        "● Кармические задачи\n"
-        "● Зоны силы и слабости\n"
-        "<b>💲 Полный анализ по Матрице судьбы будет стоить 2000₽.</b>\n"
-        "Это не гадание, это анализ по дате рождения. Хочешь получить? Жми «Продолжить» — и я пришлю реквизиты для оплаты. После оплаты — в течение 24 часов пришлю подробный расчёт.",
-        reply_markup=payment_button,
-        parse_mode="HTML"
-    )
-    await callback.answer()
-
-# ——— ОБРАБОТКА "ХОЧУ ЗАКАЗАТЬ БРАСЛЕТ" ———
+# ——— ОБРАБОТКА КНОПКИ "ХОЧУ ЗАКАЗАТЬ БРАСЛЕТ" ———
 @dp.callback_query(F.data == "want_bracelet")
 async def want_bracelet_callback(callback: CallbackQuery):
     contact_button = InlineKeyboardMarkup(
@@ -661,6 +635,26 @@ async def want_bracelet_callback(callback: CallbackQuery):
         "Жми <b>«УТОЧНИТЬ ДЕТАЛИ»</b> и введи свою дату рождения.\n"
         "В течение часа <b>Master Mystic</b> свяжется с тобой и скажет, какие камни подойдут для твоего Кармического хвоста.\n"
         "Вы обсудите детали по дизайну и доставке.",
+        reply_markup=contact_button,
+        parse_mode="HTML"
+    )
+
+# ——— ОБРАБОТКА ТЕКСТА "Хочу браслет" — отправляем сообщение с кнопкой ———
+@dp.message(F.text.func(lambda text: "хочу браслет" in text.lower()))
+async def handle_want_bracelet(message: Message):
+    contact_button = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="💬 УТОЧНИТЬ ДЕТАЛИ", url="https://t.me/Mattrehka")]
+        ]
+    )
+    await bot.send_message(
+        chat_id=message.from_user.id,
+        text=(
+            "Отлично! Для того, чтобы <b>Master Mystic</b> начал изготавливать для тебя браслет, нужно уточнить некоторые детали.\n"
+            "Жми <b>«УТОЧНИТЬ ДЕТАЛИ»</b> и введи свою дату рождения.\n"
+            "В течение часа <b>Master Mystic</b> свяжется с тобой и скажет, какие камни подойдут для твоего Кармического хвоста.\n"
+            "Вы обсудите детали по дизайну и доставке."
+        ),
         reply_markup=contact_button,
         parse_mode="HTML"
     )
@@ -726,6 +720,28 @@ async def think_callback(callback: CallbackQuery):
         parse_mode="HTML"
     )
 
+# ——— ОБРАБОТКА КНОПКИ "СДЕЛАТЬ ПОЛНЫЙ АНАЛИЗ" — отправляем новое сообщение ———
+@dp.callback_query(F.data == "full_analysis")
+async def callback_full_analysis(callback: CallbackQuery):
+    payment_button = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="✅ Продолжить", callback_data="pay")],
+            [InlineKeyboardButton(text="⏸ Я подумаю", callback_data="think")]
+        ]
+    )
+    await callback.message.answer(
+        "<b>Отлично! В полном анализе ты узнаешь:</b>\n"
+        "● Денежный код\n"
+        "● Призвание и путь души\n"
+        "● Кармические задачи\n"
+        "● Зоны силы и слабости\n"
+        "<b>💲 Полный анализ по Матрице судьбы будет стоить 2000₽.</b>\n"
+        "Это не гадание, это анализ по дате рождения. Хочешь получить? Жми «Продолжить» — и я пришлю реквизиты для оплаты. После оплаты — в течение 24 часов пришлю подробный расчёт.",
+        reply_markup=payment_button,
+        parse_mode="HTML"
+    )
+    await callback.answer()  # просто закрываем уведомление
+
 # ——— Эндпоинты для Render ———
 async def health(request):
     return web.Response(text="OK", status=200)
@@ -755,7 +771,7 @@ async def main():
     app.router.add_get('/', root)
     runner = web.AppRunner(app)
     await runner.setup()
-    site = web.TCPSite(runner, host="0.0.0.0", port=PORT)
+    site = web.TCPSite(runner, host="0.0.0.0", port=int(os.getenv("PORT", 10000)))
     await site.start()
     logger.info("🚀 Бот запущен и слушает webhook")
     try:
