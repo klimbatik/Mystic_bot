@@ -32,36 +32,52 @@ dp = Dispatcher()
 # 👤 Твой Telegram ID
 ADMIN_ID = 1030370280
 
-# Хранение последней даты по пользователю
+# Хранение данных
 user_last_birthday = {}  # {user_id: "дата"}
-pending_notifications = {}  # {user_id: task} — для отмены уведомлений
+pending_notifications = {}  # {user_id: task}
 
 # 📊 Статистика
-user_count = 0  # Всего пользователей за всё время
-daily_users = set()  # ID пользователей за сегодня
+all_users = set()  # Все пользователи за всё время
+daily_users = set()  # Кто был сегодня
+new_daily_count = 0
+returning_daily_count = 0
 
-# 📁 Загружаем статистику при запуске
-try:
-    with open("stats.json", "r", encoding="utf-8") as f:
-        data = json.load(f)
-        user_count = data.get("user_count", 0)
-        saved_date = data.get("date")
-        if saved_date == datetime.now().strftime("%Y-%m-%d"):
-            daily_users = set(data.get("daily_users", []))
-        else:
-            daily_users = set()  # Новый день — сброс
-    logger.info(f"📊 Статистика загружена: {user_count} всего, {len(daily_users)} сегодня")
-except FileNotFoundError:
-    logger.info("📊 Файл статистики не найден. Начинаем с нуля.")
+# 💾 Загрузка статистики
+def load_stats():
+    global all_users, daily_users, new_daily_count, returning_daily_count
+    try:
+        with open("stats.json", "r", encoding="utf-8") as f:
+            data = json.load(f)
+            all_users = set(data.get("all_users", []))
+            saved_date = data.get("date")
+            current_date = datetime.now().strftime("%Y-%m-%d")
 
-# 💾 Сохраняем статистику в файл
+            if saved_date == current_date:
+                daily_users = set(data.get("daily_users", []))
+                # Пересчитаем новые и повторные
+                new_daily_count = len(daily_users)  # временно, будет обновляться при старте
+                returning_daily_count = 0  # будет считаться при старте
+            else:
+                daily_users = set()
+                new_daily_count = 0
+                returning_daily_count = 0
+        logger.info(f"📊 Статистика загружена: {len(all_users)} всего, {len(daily_users)} сегодня")
+    except FileNotFoundError:
+        all_users = set()
+        daily_users = set()
+        logger.info("📊 Файл статистики не найден. Начинаем с нуля.")
+
+# 💾 Сохранение статистики
 def save_stats():
     with open("stats.json", "w", encoding="utf-8") as f:
         json.dump({
-            "user_count": user_count,
+            "all_users": list(all_users),
             "daily_users": list(daily_users),
             "date": datetime.now().strftime("%Y-%m-%d")
         }, f, ensure_ascii=False, indent=2)
+
+# Загружаем статистику при запуске
+load_stats()
 
 # ——— функция нормализации ———
 def norm22(n: int) -> int:
@@ -454,13 +470,21 @@ subscribe_button = InlineKeyboardMarkup(
 # ——— команда /start ———
 @dp.message(Command("start"))
 async def start(message: Message):
-    global user_count
     user_id = message.from_user.id
-    if user_id not in daily_users:
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    is_new_user = user_id not in all_users
+    is_returning_today = user_id in daily_users
+
+    # Обновляем статистику
+    if is_new_user:
+        all_users.add(user_id)
+    if not is_returning_today:
         daily_users.add(user_id)
-        user_count += 1
-        save_stats()
-        logger.info(f"🎯 Новый пользователь: {user_id}. Всего: {user_count}, сегодня: {len(daily_users)}")
+
+    # Сохраняем
+    save_stats()
+
+    # Отправляем приветствие
     await bot.send_message(
         chat_id=message.from_user.id,
         text=(
@@ -477,19 +501,23 @@ async def start(message: Message):
 async def show_stats(message: Message):
     if message.from_user.id == ADMIN_ID:
         current_date = datetime.now().strftime("%d.%m.%Y")
+        new_today = len(daily_users & all_users)  # те, кто впервые сегодня
+        returning_today = len(daily_users) - new_today
+
         await message.answer(
-            f"📈 <b>Отчёт по боту — {current_date}</b>\n"
-            f"👥 <b>Всего пользователей:</b> {user_count}\n"
-            f"🔄 <b>Сегодня:</b> {len(daily_users)}\n"
-            "———\n"
+            f"📊 <b>Отчёт по боту — {current_date}</b>\n"
+            f"👥 <b>Всего пользователей:</b> {len(all_users)}\n"
+            f"🆕 <b>Новых сегодня:</b> {new_today}\n"
+            f"🔁 <b>Повторных сегодня:</b> {returning_today}\n"
+            f"———\n"
             "Бот работает стабильно 🚀",
             parse_mode="HTML"
         )
-        logger.info("📊 Админ запросил статистику")
+        logger.info(f"📊 Админ запросил статистику: {len(all_users)} всего, {new_today} новых, {returning_today} повторных")
     else:
         await message.answer("❌ У вас нет доступа к этой команде.")
 
-# ——— обработчик "О канале Master Mystic" ———
+# ——— остальные обработчики (без изменений) ———
 @dp.message(F.text == "О канале Master Mystic")
 async def subscribe(message: Message):
     await bot.send_message(
@@ -506,7 +534,6 @@ async def subscribe(message: Message):
         parse_mode="HTML"
     )
 
-# ——— обработчик "Сделать полный анализ" ———
 @dp.message(F.text == "Сделать полный анализ")
 async def full_analysis(message: Message):
     payment_button = InlineKeyboardMarkup(
@@ -530,7 +557,6 @@ async def full_analysis(message: Message):
         parse_mode="HTML"
     )
 
-# ——— обработка "Продолжить" ———
 @dp.callback_query(F.data == "pay")
 async def send_payment_info(callback: CallbackQuery):
     payment_info = (
@@ -545,14 +571,11 @@ async def send_payment_info(callback: CallbackQuery):
     )
     await callback.message.edit_text(payment_info, reply_markup=ready_button, parse_mode="HTML")
 
-# ——— СОХРАНЕНИЕ ДАТЫ ПРИ ВВОДЕ ———
 @dp.message(F.text.regexp(r"^\s*(\d{2})\.\s*(\d{2})\.\s*(\d{4})\s*$"))
 async def handle_date(message: Message):
-    logger.info(f"Пользователь {message.from_user.id} ввёл дату: '{message.text}'")
     try:
         day, month, year = map(int, message.text.strip().split("."))
     except Exception as e:
-        logger.error(f"Ошибка парсинга даты: {e}")
         await bot.send_message(
             chat_id=message.from_user.id,
             text="⚠️ Ошибка формата даты. Введите в формате ДД.ММ.ГГГГ.",
@@ -579,7 +602,6 @@ async def handle_date(message: Message):
     detailed_text = DETAILED_DESCRIPTIONS.get(tail_triplet, "Подробное описание пока недоступно.")
     pdf_url = PDF_LINKS.get(tail_triplet, "#")
 
-    # Отправляем сообщение с кнопками — ОДИН РАЗ, и оно НИКОГДА не редактируется
     await bot.send_message(
         chat_id=message.from_user.id,
         text=(
@@ -596,7 +618,6 @@ async def handle_date(message: Message):
         parse_mode="HTML"
     )
 
-    # Отложенное сообщение про браслет
     async def delayed_message():
         await asyncio.sleep(60)
         bracelet_keyboard = InlineKeyboardMarkup(
@@ -622,24 +643,6 @@ async def handle_date(message: Message):
     task = asyncio.create_task(delayed_message())
     pending_notifications[user_id] = task
 
-# ——— ОБРАБОТКА КНОПКИ "ХОЧУ ЗАКАЗАТЬ БРАСЛЕТ" ———
-@dp.callback_query(F.data == "want_bracelet")
-async def want_bracelet_callback(callback: CallbackQuery):
-    contact_button = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="💬 УТОЧНИТЬ ДЕТАЛИ", url="https://t.me/Mattrehka")]
-        ]
-    )
-    await callback.message.edit_text(
-        "Отлично! Для того, чтобы <b>Master Mystic</b> начал изготавливать для тебя браслет, нужно уточнить некоторые детали.\n"
-        "Жми <b>«УТОЧНИТЬ ДЕТАЛИ»</b> и введи свою дату рождения.\n"
-        "В течение часа <b>Master Mystic</b> свяжется с тобой и скажет, какие камни подойдут для твоего Кармического хвоста.\n"
-        "Вы обсудите детали по дизайну и доставке.",
-        reply_markup=contact_button,
-        parse_mode="HTML"
-    )
-
-# ——— ОБРАБОТКА ТЕКСТА "Хочу браслет" — отправляем сообщение с кнопкой ———
 @dp.message(F.text.func(lambda text: "хочу браслет" in text.lower()))
 async def handle_want_bracelet(message: Message):
     contact_button = InlineKeyboardMarkup(
@@ -659,7 +662,22 @@ async def handle_want_bracelet(message: Message):
         parse_mode="HTML"
     )
 
-# ——— ОБРАБОТКА "Я ПОДУМАЮ" (браслет) ———
+@dp.callback_query(F.data == "want_bracelet")
+async def want_bracelet_callback(callback: CallbackQuery):
+    contact_button = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="💬 УТОЧНИТЬ ДЕТАЛИ", url="https://t.me/Mattrehka")]
+        ]
+    )
+    await callback.message.edit_text(
+        "Отлично! Для того, чтобы <b>Master Mystic</b> начал изготавливать для тебя браслет, нужно уточнить некоторые детали.\n"
+        "Жми <b>«УТОЧНИТЬ ДЕТАЛИ»</b> и введи свою дату рождения.\n"
+        "В течение часа <b>Master Mystic</b> свяжется с тобой и скажет, какие камни подойдут для твоего Кармического хвоста.\n"
+        "Вы обсудите детали по дизайну и доставке.",
+        reply_markup=contact_button,
+        parse_mode="HTML"
+    )
+
 @dp.callback_query(F.data == "think_bracelet")
 async def think_bracelet(callback: CallbackQuery):
     await bot.send_message(
@@ -671,7 +689,6 @@ async def think_bracelet(callback: CallbackQuery):
         parse_mode="HTML"
     )
 
-# ——— ОБРАБОТКА "ГОТОВО" — ПОЛНЫЙ АНАЛИЗ ———
 @dp.callback_query(F.data == "ready")
 async def send_contact(callback: CallbackQuery):
     user_id = callback.from_user.id
@@ -710,7 +727,6 @@ async def send_contact(callback: CallbackQuery):
         parse_mode="HTML"
     )
 
-# ——— обработка "Я подумаю" ———
 @dp.callback_query(F.data == "think")
 async def think_callback(callback: CallbackQuery):
     await callback.message.edit_text(
@@ -720,7 +736,6 @@ async def think_callback(callback: CallbackQuery):
         parse_mode="HTML"
     )
 
-# ——— ОБРАБОТКА КНОПКИ "СДЕЛАТЬ ПОЛНЫЙ АНАЛИЗ" — отправляем новое сообщение ———
 @dp.callback_query(F.data == "full_analysis")
 async def callback_full_analysis(callback: CallbackQuery):
     payment_button = InlineKeyboardMarkup(
@@ -740,7 +755,7 @@ async def callback_full_analysis(callback: CallbackQuery):
         reply_markup=payment_button,
         parse_mode="HTML"
     )
-    await callback.answer()  # просто закрываем уведомление
+    await callback.answer()
 
 # ——— Эндпоинты для Render ———
 async def health(request):
