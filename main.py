@@ -34,9 +34,9 @@ dp = Dispatcher()
 ADMIN_ID = 1030370280
 
 # Хранение данных пользователей
-user_last_birthday = {}  # {user_id: "дата"}
-user_last_tail = {}      # {user_id: (M, N, D)}
-pending_notifications = {}  # {user_id: task}
+user_last_birthday = {}      # {user_id: "дата"}
+user_last_analysis_msg = {}  # {user_id: message_id} — ID первого сообщения с анализом
+pending_notifications = {}   # {user_id: task} — для отмены уведомлений
 
 # 📊 Статистика
 user_count = 0
@@ -509,39 +509,6 @@ async def subscribe(message: Message):
         parse_mode="HTML"
     )
 
-# ——— обработчик "Сделать полный анализ" ———
-@dp.message(F.text == "Сделать полный анализ")
-async def full_analysis(message: Message):
-    user_id = message.from_user.id
-    tail_triplet = user_last_tail.get(user_id)
-    if not tail_triplet:
-        await message.answer("Сначала введите дату рождения.")
-        return
-
-    pdf_url = PDF_LINKS.get(tail_triplet, "#")
-
-    payment_button = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="📖 ЧИТАТЬ ПОЛНОСТЬЮ", url=pdf_url)],
-            [InlineKeyboardButton(text="✅ Продолжить", callback_data="pay")],
-            [InlineKeyboardButton(text="⏸ Я подумаю", callback_data="think")]
-        ]
-    )
-    await bot.send_message(
-        chat_id=message.from_user.id,
-        text=(
-            "<b>Отлично! В полном анализе ты узнаешь:</b>\n"
-            "● Денежный код\n"
-            "● Призвание и путь души\n"
-            "● Кармические задачи\n"
-            "● Зоны силы и слабости\n"
-            "<b>💲 Полный анализ по Матрице судьбы будет стоить 2000₽.</b>\n"
-            "Это не гадание, это анализ по дате рождения. Хочешь получить? Жми «Продолжить» — и я пришлю реквизиты для оплаты. После оплаты — в течение 24 часов пришлю подробный расчёт."
-        ),
-        reply_markup=payment_button,
-        parse_mode="HTML"
-    )
-
 # ——— СОХРАНЕНИЕ ДАТЫ ПРИ ВВОДЕ ———
 @dp.message(F.text.regexp(r"^\s*(\d{2})\.\s*(\d{2})\.\s*(\d{4})\s*$"))
 async def handle_date(message: Message):
@@ -567,41 +534,42 @@ async def handle_date(message: Message):
 
     user_id = message.from_user.id
     user_last_birthday[user_id] = f"{day}.{month}.{year}"
-    tail_triplet = calc_tail(day, month, year)
-    user_last_tail[user_id] = tail_triplet  # Сохраняем хвост
 
     if user_id in pending_notifications:
         pending_notifications[user_id].cancel()
 
+    tail_triplet = calc_tail(day, month, year)
     description = describe_tail(tail_triplet)
     detailed_text = DETAILED_DESCRIPTIONS.get(tail_triplet, "Подробное описание пока недоступно.")
     pdf_url = PDF_LINKS.get(tail_triplet, "#")
 
-    inline_keyboard = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="📖 ЧИТАТЬ ПОЛНОСТЬЮ", url=pdf_url)],
-            [InlineKeyboardButton(text="✅ СДЕЛАТЬ ПОЛНЫЙ АНАЛИЗ", callback_data="full_analysis")]
-        ]
-    )
-
-    await bot.send_message(
+    # Отправляем сообщение с кнопками — ОДИН РАЗ, и оно НИКОГДА не редактируется
+    analysis_message = await bot.send_message(
         chat_id=message.from_user.id,
         text=(
             f"🔮 <b>Твой кармический хвост:</b> {tail_triplet[0]}-{tail_triplet[1]}-{tail_triplet[2]}\n"
             f"📌 {description}\n"
             f"{detailed_text}"
         ),
-        reply_markup=inline_keyboard,
+        reply_markup=InlineKeyboardMarkup(
+            inline_keyboard=[
+                [InlineKeyboardButton(text="📖 ЧИТАТЬ ПОЛНОСТЬЮ", url=pdf_url)],
+                [InlineKeyboardButton(text="✅ СДЕЛАТЬ ПОЛНЫЙ АНАЛИЗ", callback_data="full_analysis")]
+            ]
+        ),
         parse_mode="HTML"
     )
 
+    # Сохраняем ID этого сообщения, чтобы не трогать его
+    user_last_analysis_msg[user_id] = analysis_message.message_id
+
+    # Запускаем отложенное сообщение (про браслет)
     async def delayed_message():
         await asyncio.sleep(60)
         bracelet_keyboard = InlineKeyboardMarkup(
             inline_keyboard=[
-                [InlineKeyboardButton(text="📖 ЧИТАТЬ ПОЛНОСТЬЮ", url=pdf_url)],
                 [InlineKeyboardButton(text="💎 ХОЧУ ЗАКАЗАТЬ БРАСЛЕТ", callback_data="want_bracelet")],
-                [InlineKeyboardButton(text="⏸ Я ПОДУМАЮ", callback_data="think_bracelet")]
+                [InlineKeyboardButton(text="⏸ Я подумаю", callback_data="think_bracelet")]
             ]
         )
         await bot.send_message(
@@ -621,26 +589,16 @@ async def handle_date(message: Message):
     task = asyncio.create_task(delayed_message())
     pending_notifications[user_id] = task
 
-# ——— ОБРАБОТКА КНОПКИ "СДЕЛАТЬ ПОЛНЫЙ АНАЛИЗ" — callback ———
+# ——— ОБРАБОТКА КНОПКИ "СДЕЛАТЬ ПОЛНЫЙ АНАЛИЗ" — отправляем новое сообщение ———
 @dp.callback_query(F.data == "full_analysis")
 async def callback_full_analysis(callback: CallbackQuery):
-    user_id = callback.from_user.id
-    tail_triplet = user_last_tail.get(user_id)
-    if not tail_triplet:
-        await callback.answer("Введите дату рождения.")
-        return
-
-    pdf_url = PDF_LINKS.get(tail_triplet, "#")
-
     payment_button = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="📖 ЧИТАТЬ ПОЛНОСТЬЮ", url=pdf_url)],
             [InlineKeyboardButton(text="✅ Продолжить", callback_data="pay")],
             [InlineKeyboardButton(text="⏸ Я подумаю", callback_data="think")]
         ]
     )
-
-    await callback.message.edit_text(
+    await callback.message.answer(
         "<b>Отлично! В полном анализе ты узнаешь:</b>\n"
         "● Денежный код\n"
         "● Призвание и путь души\n"
@@ -651,14 +609,11 @@ async def callback_full_analysis(callback: CallbackQuery):
         reply_markup=payment_button,
         parse_mode="HTML"
     )
+    await callback.answer()  # просто закрываем уведомление
 
 # ——— обработка "Продолжить" ———
 @dp.callback_query(F.data == "pay")
 async def send_payment_info(callback: CallbackQuery):
-    user_id = callback.from_user.id
-    tail_triplet = user_last_tail.get(user_id)
-    pdf_url = PDF_LINKS.get(tail_triplet, "#") if tail_triplet else "#"
-
     payment_info = (
         "💳 <b>Реквизиты для оплаты:</b>\n"
         "Сбербанк: <code>4276 5400 2708 8180</code>\n"
@@ -666,7 +621,6 @@ async def send_payment_info(callback: CallbackQuery):
     )
     ready_button = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="📖 ЧИТАТЬ ПОЛНОСТЬЮ", url=pdf_url)],
             [InlineKeyboardButton(text="✅ ГОТОВО", callback_data="ready")]
         ]
     )
@@ -711,7 +665,7 @@ async def send_contact(callback: CallbackQuery):
         parse_mode="HTML"
     )
 
-# ——— ОБРАБОТКА "Я подумаю" ———
+# ——— ОБРАБОТКА "Я подумаю" (в полном анализе) ———
 @dp.callback_query(F.data == "think")
 async def think_callback(callback: CallbackQuery):
     await callback.message.edit_text(
@@ -724,13 +678,8 @@ async def think_callback(callback: CallbackQuery):
 # ——— ОБРАБОТКА "ХОЧУ ЗАКАЗАТЬ БРАСЛЕТ" ———
 @dp.callback_query(F.data == "want_bracelet")
 async def want_bracelet_callback(callback: CallbackQuery):
-    user_id = callback.from_user.id
-    tail_triplet = user_last_tail.get(user_id)
-    pdf_url = PDF_LINKS.get(tail_triplet, "#") if tail_triplet else "#"
-
     contact_button = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="📖 ЧИТАТЬ ПОЛНОСТЬЮ", url=pdf_url)],
             [InlineKeyboardButton(text="💬 УТОЧНИТЬ ДЕТАЛИ", url="https://t.me/Mattrehka")]
         ]
     )
