@@ -1,8 +1,6 @@
 import os
 import asyncio
 import logging
-import json
-from datetime import datetime, timedelta
 from aiogram import Bot, Dispatcher, F
 from aiogram.client.default import DefaultBotProperties
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, CallbackQuery
@@ -35,28 +33,6 @@ ADMIN_ID = 1030370280
 # Хранение последней даты по пользователю
 user_last_birthday = {}  # {user_id: "дата"}
 pending_notifications = {}  # {user_id: task} — для отмены уведомлений
-
-# 📊 Статистика: количество пользователей
-user_count = 0
-active_users = set()
-
-# 📁 Загружаем статистику при запуске
-try:
-    with open("stats.json", "r", encoding="utf-8") as f:
-        data = json.load(f)
-        user_count = data.get("user_count", 0)
-        active_users = set(data.get("active_users", []))
-    logger.info(f"📊 Статистика загружена: {user_count} пользователей")
-except FileNotFoundError:
-    logger.info("📊 Файл статистики не найден. Начинаем с нуля.")
-
-# 💾 Сохраняем статистику в файл
-def save_stats():
-    with open("stats.json", "w", encoding="utf-8") as f:
-        json.dump({
-            "user_count": user_count,
-            "active_users": list(active_users)
-        }, f, ensure_ascii=False, indent=2)
 
 # ——— функция нормализации ———
 def norm22(n: int) -> int:
@@ -401,66 +377,55 @@ DETAILED_DESCRIPTIONS = {
 # ——— ссылки на PDF ———
 PDF_LINKS = {
     (18,6,6): "https://drive.google.com/file/d/10R1PoK8lQbcP5fEVVXecMoLymi45tsGW/view?usp=drive_link",
-    (9,9,18): "  https://drive.google.com/file/d/1QaMYUJv--n8iLwseG8_MAgz79dggEgg6/view?usp=drive_link",
-    (9,18,9): "  https://drive.google.com/file/d/1uRuiDM-csTgk6SGweSkhbGT20yfK1kXd/view?usp=drive_link",
-    (18,9,9): "  https://drive.google.com/file/d/10kDSS349TSu9eYaiCo61uWVjx11WOWRA/view?usp=drive_link",
-    (6,5,17): "  https://drive.google.com/file/d/1IOKcMbpaRniLBmPL8s-anCwi1eBrr_O9/view?usp=drive_link",
-    (15,20,5): "  https://drive.google.com/file/d/1t3mCNby-NCCBE4Pz_EFbuvXsJim9mpqG/view?usp=drive_link",
-    (15,5,8): "  https://drive.google.com/file/d/161NMgmh9KDcrK0og17JrHBSloSNYvNmz/view?usp=drive_link",
-    (3,9,12): "  https://drive.google.com/file/d/1w69XCIBm3u6XVTXJF893iL3nV_CzgaRJ/view?usp=drive_link",
-    (3,12,9): "  https://drive.google.com/file/d/1w69XCIBm3u6XVTXJF893iL3nV_CzgaRJ/view?usp=drive_link",
-    (9,12,3): "  https://drive.google.com/file/d/1w69XCIBm3u6XVTXJF893iL3nV_CzgaRJ/view?usp=drive_link",
-    (15,8,11): "  https://drive.google.com/file/d/14eTveJvncg3FRsOlGqBuiDD1Vd885BcE/view?usp=drive_link",
-    (9,15,6): "  https://drive.google.com/file/d/18wj_PCzN7ZEaUvfmGiDW2AttFdY15snQ/view?usp=drive_link",
-    (6,17,11): "  https://drive.google.com/file/d/18wj_PCzN7ZEaUvfmGiDW2AttFdY15snQ/view?usp=drive_link",
-    (12,19,7): "  https://drive.google.com/file/d/1RYUBW4pCeSmsXwcjjTLiWdXHWP1uud2z/view?usp=drive_link",
-    (21,4,10): "  https://drive.google.com/file/d/1O27XG5pSIcGbfsNSQILNTbNVdXxYbf5Z/view?usp=drive_link",
-    (12,16,4): "  https://drive.google.com/file/d/12EhO882TN6FFZNkV1LV18Gzy6SGTbJaF/view?usp=drive_link",
-    (3,22,19): "  https://drive.google.com/file/d/1BBgsTpA_twkhsgAly9i3DtR6fseIMlRa/view?usp=drive_link",
-    (21,10,16): "  https://drive.google.com/file/d/1unFYU8JlQPhYPmFgLlaRpDwX49TBP2WE/view?usp=drive_link",
-    (6,8,20): "  https://drive.google.com/file/d/1SdzrR0vieHPZsPI4oxAynQ8KUgN2wYkK/view?usp=drive_link",
-    (3,7,22): "  https://drive.google.com/file/d/1dM0z8LpAgNZEO2bViZXiJBQssG1MmFZh/view?usp=drive_link",
-    (9,3,21): "  https://drive.google.com/file/d/15pb7irKooMODIvkGacYGNQbGgngdp_w-/view?usp=drive_link",
-    (21,7,13): "  https://drive.google.com/file/d/1lPwcqfBzC9gUNdC_10QYPavb3v3N-YIS/view?usp=drive_link",
-    (18,6,15): "  https://drive.google.com/file/d/1PWq5Vf6nBrL0eZPWXJa4SmLHsdbJIoKc/view?usp=drive_link",
-    (6,20,14): "  https://drive.google.com/file/d/1kugwosiU6g31pPujfCZfSo9WGDouzIJ6/view?usp=drive_link",
-    (21,10,7): "  https://drive.google.com/file/d/1vl2gBjs_jQBDHakFJBsHr4uU7OaGsPnn/view?usp=drive_link",
-    (3,13,10): "  https://drive.google.com/file/d/10_7IQ-bHmJnmmzYLwpF06NDKlRhavJUV/view?usp=drive_link",
-    (12,18,3): "  https://drive.google.com/file/d/1e1xcWuo1uYHDLYGJGkzhP1niun92kUUP/view?usp=drive_link",
-    (18,3,12): "  https://drive.google.com/file/d/1e1xcWuo1uYHDLYGJGkzhP1niun92kUUP/view?usp=drive_link",
-    (6,14,8): "  https://drive.google.com/file/d/1WC9HbCl6PfDasDX1uYM6qcF7nvFO8JcS/view?usp=drive_link",
+    (9,9,18): "https://drive.google.com/file/d/1QaMYUJv--n8iLwseG8_MAgz79dggEgg6/view?usp=drive_link",
+    (9,18,9): "https://drive.google.com/file/d/1uRuiDM-csTgk6SGweSkhbGT20yfK1kXd/view?usp=drive_link",
+    (18,9,9): "https://drive.google.com/file/d/10kDSS349TSu9eYaiCo61uWVjx11WOWRA/view?usp=drive_link",
+    (6,5,17): "https://drive.google.com/file/d/1IOKcMbpaRniLBmPL8s-anCwi1eBrr_O9/view?usp=drive_link",
+    (15,20,5): "https://drive.google.com/file/d/1t3mCNby-NCCBE4Pz_EFbuvXsJim9mpqG/view?usp=drive_link",
+    (15,5,8): "https://drive.google.com/file/d/161NMgmh9KDcrK0og17JrHBSloSNYvNmz/view?usp=drive_link",
+    (3,9,12): "https://drive.google.com/file/d/1w69XCIBm3u6XVTXJF893iL3nV_CzgaRJ/view?usp=drive_link",
+    (3,12,9): "https://drive.google.com/file/d/1w69XCIBm3u6XVTXJF893iL3nV_CzgaRJ/view?usp=drive_link",
+    (9,12,3): "https://drive.google.com/file/d/1w69XCIBm3u6XVTXJF893iL3nV_CzgaRJ/view?usp=drive_link",
+    (15,8,11): "https://drive.google.com/file/d/14eTveJvncg3FRsOlGqBuiDD1Vd885BcE/view?usp=drive_link",
+    (9,15,6): "https://drive.google.com/file/d/18wj_PCzN7ZEaUvfmGiDW2AttFdY15snQ/view?usp=drive_link",
+    (6,17,11): "https://drive.google.com/file/d/18wj_PCzN7ZEaUvfmGiDW2AttFdY15snQ/view?usp=drive_link",
+    (12,19,7): "https://drive.google.com/file/d/1RYUBW4pCeSmsXwcjjTLiWdXHWP1uud2z/view?usp=drive_link",
+    (21,4,10): "https://drive.google.com/file/d/1O27XG5pSIcGbfsNSQILNTbNVdXxYbf5Z/view?usp=drive_link",
+    (12,16,4): "https://drive.google.com/file/d/12EhO882TN6FFZNkV1LV18Gzy6SGTbJaF/view?usp=drive_link",
+    (3,22,19): "https://drive.google.com/file/d/1BBgsTpA_twkhsgAly9i3DtR6fseIMlRa/view?usp=drive_link",
+    (21,10,16): "https://drive.google.com/file/d/1unFYU8JlQPhYPmFgLlaRpDwX49TBP2WE/view?usp=drive_link",
+    (6,8,20): "https://drive.google.com/file/d/1SdzrR0vieHPZsPI4oxAynQ8KUgN2wYkK/view?usp=drive_link",
+    (3,7,22): "https://drive.google.com/file/d/1dM0z8LpAgNZEO2bViZXiJBQssG1MmFZh/view?usp=drive_link",
+    (9,3,21): "https://drive.google.com/file/d/15pb7irKooMODIvkGacYGNQbGgngdp_w-/view?usp=drive_link",
+    (21,7,13): "https://drive.google.com/file/d/1lPwcqfBzC9gUNdC_10QYPavb3v3N-YIS/view?usp=drive_link",
+    (18,6,15): "https://drive.google.com/file/d/1PWq5Vf6nBrL0eZPWXJa4SmLHsdbJIoKc/view?usp=drive_link",
+    (6,20,14): "https://drive.google.com/file/d/1kugwosiU6g31pPujfCZfSo9WGDouzIJ6/view?usp=drive_link",
+    (21,10,7): "https://drive.google.com/file/d/1vl2gBjs_jQBDHakFJBsHr4uU7OaGsPnn/view?usp=drive_link",
+    (3,13,10): "https://drive.google.com/file/d/10_7IQ-bHmJnmmzYLwpF06NDKlRhavJUV/view?usp=drive_link",
+    (12,18,3): "https://drive.google.com/file/d/1e1xcWuo1uYHDLYGJGkzhP1niun92kUUP/view?usp=drive_link",
+    (18,3,12): "https://drive.google.com/file/d/1e1xcWuo1uYHDLYGJGkzhP1niun92kUUP/view?usp=drive_link",
+    (6,14,8): "https://drive.google.com/file/d/1WC9HbCl6PfDasDX1uYM6qcF7nvFO8JcS/view?usp=drive_link",
 }
 
 # ——— кнопки ———
 start_keyboard = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="Сделать полный анализ")],
-        [KeyboardButton(text="О канале Master Mystic")]
+        [KeyboardButton(text="Подписаться на канал Master Mystic")]
     ],
     resize_keyboard=True
 )
 
 subscribe_button = InlineKeyboardMarkup(
     inline_keyboard=[
-        [InlineKeyboardButton(text="Подписаться", url="  https://t.me/Master_Mystic  ")]
+        [InlineKeyboardButton(text="Подписаться", url="https://t.me/Master_Mystic")]
     ]
 )
 
 # ——— команда /start ———
 @dp.message(Command("start"))
 async def start(message: Message):
-    global user_count
-
-    user_id = message.from_user.id
-
-    # Если пользователь впервые — считаем его
-    if user_id not in active_users:
-        active_users.add(user_id)
-        user_count += 1
-        logger.info(f"🎯 Новый пользователь: {user_id}. Всего: {user_count}")
-        save_stats()  # Сохраняем в файл
-
-    logger.info(f"Пользователь {user_id} начал чат")
+    logger.info(f"Пользователь {message.from_user.id} начал чат")
     await bot.send_message(
         chat_id=message.from_user.id,
         text=(
@@ -473,56 +438,27 @@ async def start(message: Message):
         parse_mode="HTML"
     )
 
-# ——— команда /stats — только для админа ———
-@dp.message(Command("stats"))
-async def show_stats(message: Message):
-    if message.from_user.id == ADMIN_ID:
-        await message.answer(
-            f"📊 <b>Статистика бота:</b>\n"
-            f"👥 Всего пользователей: <b>{user_count}</b>\n"
-            f"🔄 Уникальных за сессию: <b>{len(active_users)}</b>",
-            parse_mode="HTML"
-        )
-    else:
-        await message.answer("❌ У вас нет доступа к этой команде.")
-
-# ——— обработчик "О канале Master Mystic" ———
-@dp.message(F.text == "О канале Master Mystic")
+# ——— обработчик "Подписаться на канал Master Mystic" ———
+@dp.message(F.text == "Подписаться на канал Master Mystic")
 async def subscribe(message: Message):
     await bot.send_message(
-    chat_id=message.from_user.id,
-    text=(
-        "<b>🔹 Подписывайся на канал, где я делюсь не просто про камни и матрицу.</b>\n"
-        "Я показываю, как перезагрузить свою жизнь изнутри.\n\n"
-        "Здесь ты найдёшь:\n"
-        "• Разборы матриц судьбы — как в твоей дате рождения уже записано, почему деньги утекают, а любовь рушится\n"
-        "• Энергию камней, которые работают 24/7: не как украшение, а как талисман и защита\n"
-        "• Глубинные установки, которые ты притащил(а) из детства и прошлых жизней — и как их перепрограммировать"
-    ),
-    reply_markup=subscribe_button,
-    parse_mode="HTML"
-)
+        chat_id=message.from_user.id,
+        text=(
+            "🔹 Подписывайся на канал, где я делюсь:\n"
+            "• Кейсами клиентов\n"
+            "• Энергетикой камней\n"
+            "• Как менять жизнь через матрицу судьбы\n\n"
+            "Будет интересно!"
+        ),
+        reply_markup=subscribe_button,
+        parse_mode="HTML"
+    )
 
 # ——— обработчик "Сделать полный анализ" ———
 @dp.message(F.text == "Сделать полный анализ")
 async def full_analysis(message: Message):
-    user_id = message.from_user.id
-    birth_date = user_last_birthday.get(user_id)
-    
-    if not birth_date:
-        await message.answer("❌ Сначала введите дату рождения.")
-        return
-
-    try:
-        day, month, year = map(int, birth_date.split("."))
-        tail_triplet = calc_tail(day, month, year)
-    except:
-        await message.answer("❌ Ошибка обработки даты.")
-        return
-
     payment_button = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="📖 ЧИТАТЬ ПОДРОБНЕЕ", url=PDF_LINKS.get(tail_triplet, "#"))],
             [InlineKeyboardButton(text="✅ Продолжить", callback_data="pay")],
             [InlineKeyboardButton(text="⏸ Я подумаю", callback_data="think")]
         ]
@@ -639,7 +575,7 @@ async def handle_date(message: Message):
 async def want_bracelet_callback(callback: CallbackQuery):
     contact_button = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="💬 УТОЧНИТЬ ДЕТАЛИ", url="https://t.me/Mattrehka  ")]
+            [InlineKeyboardButton(text="💬 УТОЧНИТЬ ДЕТАЛИ", url="https://t.me/Mattrehka")]
         ]
     )
     await callback.message.edit_text(
@@ -656,7 +592,7 @@ async def want_bracelet_callback(callback: CallbackQuery):
 async def handle_want_bracelet(message: Message):
     contact_button = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="💬 УТОЧНИТЬ ДЕТАЛИ", url="https://t.me/Mattrehka  ")]
+            [InlineKeyboardButton(text="💬 УТОЧНИТЬ ДЕТАЛИ", url="https://t.me/Mattrehka")]
         ]
     )
     await bot.send_message(
@@ -722,7 +658,7 @@ async def send_contact(callback: CallbackQuery):
 
     await callback.message.edit_text(
         "Спасибо за доверие 🙏. В течение 24 часов я пришлю вам результат. "
-        "Если у вас будут вопросы, пишите в личные сообщения <a href='https://t.me/Mattrehka  '>Master Mystic</a>",
+        "Если у вас будут вопросы, пишите в личные сообщения <a href='https://t.me/Mattrehka'>Master Mystic</a>",
         parse_mode="HTML"
     )
 
@@ -730,7 +666,7 @@ async def send_contact(callback: CallbackQuery):
 @dp.callback_query(F.data == "think")
 async def think_callback(callback: CallbackQuery):
     await callback.message.edit_text(
-        "Хорошо. А пока можешь подписаться на канал <a href='https://t.me/Master_Mystic  '>Master Mystic</a>. "
+        "Хорошо. А пока можешь подписаться на канал <a href='https://t.me/Master_Mystic'>Master Mystic</a>. "
         "Многие, кто получил свой хвост, уже в канале. Присоединяйся — там живёт самая сильная энергия.",
         reply_markup=None,
         parse_mode="HTML"
@@ -739,38 +675,20 @@ async def think_callback(callback: CallbackQuery):
 # ——— обработка "СДЕЛАТЬ ПОЛНЫЙ АНАЛИЗ" ———
 @dp.callback_query(F.data == "full_analysis")
 async def callback_full_analysis(callback: CallbackQuery):
-    user_id = callback.from_user.id
-    birth_date = user_last_birthday.get(user_id)
-    
-    if not birth_date:
-        await bot.send_message(chat_id=user_id, text="❌ Сначала введите дату рождения.")
-        return
-
-    try:
-        day, month, year = map(int, birth_date.split("."))
-        tail_triplet = calc_tail(day, month, year)
-    except:
-        await bot.send_message(chat_id=user_id, text="❌ Ошибка обработки даты.")
-        return
-
     payment_button = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="📖 ЧИТАТЬ ПОДРОБНЕЕ", url=PDF_LINKS.get(tail_triplet, "#"))],
             [InlineKeyboardButton(text="✅ Продолжить", callback_data="pay")],
             [InlineKeyboardButton(text="⏸ Я подумаю", callback_data="think")]
         ]
     )
-    await bot.send_message(
-        chat_id=callback.from_user.id,
-        text=(
-            "<b>Отлично! В полном анализе ты узнаешь:</b>\n"
-            "● Денежный код\n"
-            "● Призвание и путь души\n"
-            "● Кармические задачи\n"
-            "● Зоны силы и слабости\n\n"
-            "<b>💲 Полный анализ по Матрице судьбы будет стоить 2000₽.</b>\n\n"
-            "Это не гадание, это анализ по дате рождения. Хочешь получить? Жми «Продолжить» — и я пришлю реквизиты для оплаты. После оплаты — в течение 24 часов пришлю подробный расчёт."
-        ),
+    await callback.message.edit_text(
+        "<b>Отлично! В полном анализе ты узнаешь:</b>\n"
+        "● Денежный код\n"
+        "● Призвание и путь души\n"
+        "● Кармические задачи\n"
+        "● Зоны силы и слабости\n\n"
+        "<b>💲 Полный анализ по Матрице судьбы будет стоить 2000₽.</b>\n\n"
+        "Это не гадание, это анализ по дате рождения. Хочешь получить? Жми «Продолжить» — и я пришлю реквизиты для оплаты. После оплаты — в течение 24 часов пришлю подробный расчёт.",
         reply_markup=payment_button,
         parse_mode="HTML"
     )
@@ -786,6 +704,7 @@ async def root(request):
 async def main():
     from aiogram.webhook.aiohttp_server import SimpleRequestHandler
 
+    # Установка вебхука
     if WEBHOOK_URL:
         try:
             webhook_info = await bot.get_webhook_info()
@@ -799,10 +718,17 @@ async def main():
     else:
         logger.warning("⚠️ RENDER_EXTERNAL_HOSTNAME не задан — вебхук не установлен")
 
+    # Создание веб-приложения
     app = web.Application()
+    
+    # Регистрация обработчика вебхука
     SimpleRequestHandler(dispatcher=dp, bot=bot).register(app, path="/webhook")
+    
+    # Добавление эндпоинтов
     app.router.add_get('/health', health)
-    app.router.add_get('/', root)
+    app.router.add_get('/', root)  # Главная страница
+    
+    # Запуск сервера
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, host="0.0.0.0", port=int(os.getenv("PORT", 10000)))
