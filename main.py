@@ -14,12 +14,14 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN не установлен в переменных окружения")
 
+# 🌐 URL вебхука (для Render)
 RENDER_EXTERNAL_HOSTNAME = os.getenv("RENDER_EXTERNAL_HOSTNAME")
 if RENDER_EXTERNAL_HOSTNAME:
     WEBHOOK_URL = f"https://{RENDER_EXTERNAL_HOSTNAME}/webhook"
 else:
     WEBHOOK_URL = None  # для локального запуска
 
+# 🛠️ Порт (Render передаёт PORT через переменные окружения)
 PORT = int(os.getenv("PORT", 10000))
 
 # 🛠️ Настройка логов
@@ -34,15 +36,14 @@ dp = Dispatcher()
 ADMIN_ID = 1030370280
 
 # Хранение данных пользователей
-user_last_birthday = {}      # {user_id: "дата"}
-user_last_analysis_msg = {}  # {user_id: message_id} — ID первого сообщения с анализом
-pending_notifications = {}   # {user_id: task} — для отмены уведомлений
+user_last_birthday = {}  # {user_id: "дата"}
+pending_notifications = {}  # {user_id: task} — для отмены уведомлений
 
 # 📊 Статистика
 user_count = 0
 daily_users = set()
 
-# 💾 Загрузка статистики
+# 💾 Загружаем статистику при запуске
 try:
     with open("stats.json", "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -56,7 +57,7 @@ try:
 except FileNotFoundError:
     logger.info("📊 Файл статистики не найден. Начинаем с нуля.")
 
-# 💾 Сохранение статистики
+# 💾 Сохраняем статистику
 def save_stats():
     with open("stats.json", "w", encoding="utf-8") as f:
         json.dump({
@@ -118,7 +119,7 @@ TAILS = {
 def describe_tail(triplet):
     return TAILS.get(triplet, "Неизвестный хвост")
 
-# ——— подробные описания ———
+# ——— подробные описания ——— (исправлено: убрано дублирование)
 DETAILED_DESCRIPTIONS = {
     (18,6,6): (
         "В прошлой жизни ты либо совершал любовные привороты, либо сам страдал от недостатка любви. "
@@ -509,6 +510,45 @@ async def subscribe(message: Message):
         parse_mode="HTML"
     )
 
+# ——— обработчик "Сделать полный анализ" ———
+@dp.message(F.text == "Сделать полный анализ")
+async def full_analysis(message: Message):
+    payment_button = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="✅ Продолжить", callback_data="pay")],
+            [InlineKeyboardButton(text="⏸ Я подумаю", callback_data="think")]
+        ]
+    )
+    await bot.send_message(
+        chat_id=message.from_user.id,
+        text=(
+            "<b>Отлично! В полном анализе ты узнаешь:</b>\n"
+            "● Денежный код\n"
+            "● Призвание и путь души\n"
+            "● Кармические задачи\n"
+            "● Зоны силы и слабости\n"
+            "<b>💲 Полный анализ по Матрице судьбы будет стоить 2000₽.</b>\n"
+            "Это не гадание, это анализ по дате рождения. Хочешь получить? Жми «Продолжить» — и я пришлю реквизиты для оплаты. После оплаты — в течение 24 часов пришлю подробный расчёт."
+        ),
+        reply_markup=payment_button,
+        parse_mode="HTML"
+    )
+
+# ——— обработка "Продолжить" ———
+@dp.callback_query(F.data == "pay")
+async def send_payment_info(callback: CallbackQuery):
+    payment_info = (
+        "💳 <b>Реквизиты для оплаты:</b>\n"
+        "Сбербанк: <code>4276 5400 2708 8180</code>\n"
+        "После оплаты нажми кнопку <b>ГОТОВО</b> — и я пришлю расчёт."
+    )
+    ready_button = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="✅ ГОТОВО", callback_data="ready")]
+        ]
+    )
+    await callback.message.edit_text(payment_info, reply_markup=ready_button, parse_mode="HTML")
+
 # ——— СОХРАНЕНИЕ ДАТЫ ПРИ ВВОДЕ ———
 @dp.message(F.text.regexp(r"^\s*(\d{2})\.\s*(\d{2})\.\s*(\d{4})\s*$"))
 async def handle_date(message: Message):
@@ -544,7 +584,7 @@ async def handle_date(message: Message):
     pdf_url = PDF_LINKS.get(tail_triplet, "#")
 
     # Отправляем сообщение с кнопками — ОДИН РАЗ, и оно НИКОГДА не редактируется
-    analysis_message = await bot.send_message(
+    await bot.send_message(
         chat_id=message.from_user.id,
         text=(
             f"🔮 <b>Твой кармический хвост:</b> {tail_triplet[0]}-{tail_triplet[1]}-{tail_triplet[2]}\n"
@@ -560,10 +600,7 @@ async def handle_date(message: Message):
         parse_mode="HTML"
     )
 
-    # Сохраняем ID этого сообщения, чтобы не трогать его
-    user_last_analysis_msg[user_id] = analysis_message.message_id
-
-    # Запускаем отложенное сообщение (про браслет)
+    # Отложенное сообщение про браслет
     async def delayed_message():
         await asyncio.sleep(60)
         bracelet_keyboard = InlineKeyboardMarkup(
@@ -609,22 +646,36 @@ async def callback_full_analysis(callback: CallbackQuery):
         reply_markup=payment_button,
         parse_mode="HTML"
     )
-    await callback.answer()  # просто закрываем уведомление
+    await callback.answer()
 
-# ——— обработка "Продолжить" ———
-@dp.callback_query(F.data == "pay")
-async def send_payment_info(callback: CallbackQuery):
-    payment_info = (
-        "💳 <b>Реквизиты для оплаты:</b>\n"
-        "Сбербанк: <code>4276 5400 2708 8180</code>\n"
-        "После оплаты нажми кнопку <b>ГОТОВО</b> — и я пришлю расчёт."
-    )
-    ready_button = InlineKeyboardMarkup(
+# ——— ОБРАБОТКА "ХОЧУ ЗАКАЗАТЬ БРАСЛЕТ" ———
+@dp.callback_query(F.data == "want_bracelet")
+async def want_bracelet_callback(callback: CallbackQuery):
+    contact_button = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="✅ ГОТОВО", callback_data="ready")]
+            [InlineKeyboardButton(text="💬 УТОЧНИТЬ ДЕТАЛИ", url="https://t.me/Mattrehka")]
         ]
     )
-    await callback.message.edit_text(payment_info, reply_markup=ready_button, parse_mode="HTML")
+    await callback.message.edit_text(
+        "Отлично! Для того, чтобы <b>Master Mystic</b> начал изготавливать для тебя браслет, нужно уточнить некоторые детали.\n"
+        "Жми <b>«УТОЧНИТЬ ДЕТАЛИ»</b> и введи свою дату рождения.\n"
+        "В течение часа <b>Master Mystic</b> свяжется с тобой и скажет, какие камни подойдут для твоего Кармического хвоста.\n"
+        "Вы обсудите детали по дизайну и доставке.",
+        reply_markup=contact_button,
+        parse_mode="HTML"
+    )
+
+# ——— ОБРАБОТКА "Я ПОДУМАЮ" (браслет) ———
+@dp.callback_query(F.data == "think_bracelet")
+async def think_bracelet(callback: CallbackQuery):
+    await bot.send_message(
+        chat_id=callback.from_user.id,
+        text=(
+            "Хорошо, подумай. Но помни: твоя душа уже знает, что тебе нужно двигаться вперёд. "
+            "Когда захочешь — просто напиши «Хочу браслет»."
+        ),
+        parse_mode="HTML"
+    )
 
 # ——— ОБРАБОТКА "ГОТОВО" — ПОЛНЫЙ АНАЛИЗ ———
 @dp.callback_query(F.data == "ready")
@@ -665,42 +716,13 @@ async def send_contact(callback: CallbackQuery):
         parse_mode="HTML"
     )
 
-# ——— ОБРАБОТКА "Я подумаю" (в полном анализе) ———
+# ——— обработка "Я подумаю" ———
 @dp.callback_query(F.data == "think")
 async def think_callback(callback: CallbackQuery):
     await callback.message.edit_text(
         "Хорошо. А пока можешь подписаться на канал <a href='https://t.me/Master_Mystic'>Master Mystic</a>. "
         "Многие, кто получил свой хвост, уже в канале. Присоединяйся — там живёт самая сильная энергия.",
         reply_markup=None,
-        parse_mode="HTML"
-    )
-
-# ——— ОБРАБОТКА "ХОЧУ ЗАКАЗАТЬ БРАСЛЕТ" ———
-@dp.callback_query(F.data == "want_bracelet")
-async def want_bracelet_callback(callback: CallbackQuery):
-    contact_button = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="💬 УТОЧНИТЬ ДЕТАЛИ", url="https://t.me/Mattrehka")]
-        ]
-    )
-    await callback.message.edit_text(
-        "Отлично! Для того, чтобы <b>Master Mystic</b> начал изготавливать для тебя браслет, нужно уточнить некоторые детали.\n"
-        "Жми <b>«УТОЧНИТЬ ДЕТАЛИ»</b> и введи свою дату рождения.\n"
-        "В течение часа <b>Master Mystic</b> свяжется с тобой и скажет, какие камни подойдут для твоего Кармического хвоста.\n"
-        "Вы обсудите детали по дизайну и доставке.",
-        reply_markup=contact_button,
-        parse_mode="HTML"
-    )
-
-# ——— ОБРАБОТКА "Я ПОДУМАЮ" (браслет) ———
-@dp.callback_query(F.data == "think_bracelet")
-async def think_bracelet(callback: CallbackQuery):
-    await bot.send_message(
-        chat_id=callback.from_user.id,
-        text=(
-            "Хорошо, подумай. Но помни: твоя душа уже знает, что тебе нужно двигаться вперёд. "
-            "Когда захочешь — просто напиши «Хочу браслет»."
-        ),
         parse_mode="HTML"
     )
 
