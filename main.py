@@ -561,7 +561,7 @@ async def full_analysis(message: Message):
 async def send_payment_info(callback: CallbackQuery):
     payment_info = (
         "💳 <b>Реквизиты для оплаты:</b>\n"
-        "Сбербанк: <code>4276 5400 2708 8180</code>\n"
+        "Сбербанк: <code>!!!</code>\n"
         "После оплаты нажми кнопку <b>ГОТОВО</b> — и я пришлю расчёт."
     )
     ready_button = InlineKeyboardMarkup(
@@ -796,3 +796,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
