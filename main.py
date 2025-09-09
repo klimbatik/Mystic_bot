@@ -6,7 +6,7 @@ from datetime import datetime
 from aiogram import Bot, Dispatcher, F
 from aiogram.client.default import DefaultBotProperties
 from aiogram.client.session.aiohttp import AiohttpSession
-from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, CallbackQuery, Update
+from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, CallbackQuery
 from aiogram.filters import Command
 from aiohttp import web
 
@@ -570,7 +570,7 @@ async def subscribe(message: Message):
 @dp.message(F.text == "Сделать полный анализ")
 async def full_analysis(message: Message):
     user = message.from_user
-    birth_date = user_last_birthday.get(user.id, "не указана")  # ← ДОБАВЛЕНО
+    birth_date = user_last_birthday.get(user.id, "не указана")
 
     try:
         await bot.send_message(
@@ -580,7 +580,7 @@ async def full_analysis(message: Message):
                 f"Клиент: {user.full_name}\n"
                 f"Юзернейм: @{user.username or 'нет'}\n"
                 f"ID: {user.id}\n"
-                f"Дата рождения: {birth_date}\n"  # ← ДОБАВЛЕНО
+                f"Дата рождения: {birth_date}\n"
                 f"<a href='tg://user?id={user.id}'>Начать диалог</a>\n\n"
                 f"Клиент нажал «Продолжить» — можешь писать!"
             ),
@@ -600,18 +600,7 @@ async def full_analysis(message: Message):
         parse_mode="HTML"
     )
 
-    async def send_request():
-        await asyncio.sleep(2)
-        fake_message = Message(
-            message_id=0,
-            date=datetime.now(),
-            from_user=user,
-            chat=message.chat,
-            text="ХОЧУ ПОЛНЫЙ АНАЛИЗ"
-        )
-        await dp.feed_update(bot, Update(message=fake_message))
-
-    asyncio.create_task(send_request())
+    # Удалена эмуляция — больше не нужна
 
 # ——— Обработка "Я подумаю" ———
 @dp.callback_query(F.data == "think")
@@ -700,7 +689,7 @@ async def handle_date(message: Message):
 @dp.callback_query(F.data == "full_analysis_btn")
 async def full_analysis_btn(callback: CallbackQuery):
     user = callback.from_user
-    birth_date = user_last_birthday.get(user.id, "не указана")  # ← ДОБАВЛЕНО
+    birth_date = user_last_birthday.get(user.id, "не указана")
 
     try:
         await bot.send_message(
@@ -710,7 +699,7 @@ async def full_analysis_btn(callback: CallbackQuery):
                 f"Клиент: {user.full_name}\n"
                 f"Юзернейм: @{user.username or 'нет'}\n"
                 f"ID: {user.id}\n"
-                f"Дата рождения: {birth_date}\n"  # ← ДОБАВЛЕНО
+                f"Дата рождения: {birth_date}\n"
                 f"<a href='tg://user?id={user.id}'>Начать диалог</a>\n\n"
                 f"Клиент нажал «Продолжить» — можешь писать!"
             ),
@@ -730,18 +719,8 @@ async def full_analysis_btn(callback: CallbackQuery):
         parse_mode="HTML"
     )
 
-    async def send_request():
-        await asyncio.sleep(2)
-        fake_message = Message(
-            message_id=0,
-            date=datetime.now(),
-            from_user=user,
-            chat=callback.message.chat,
-            text="ХОЧУ ПОЛНЫЙ АНАЛИЗ"
-        )
-        await dp.feed_update(bot, Update(message=fake_message))
+    # Удалена эмуляция — больше не нужна
 
-    asyncio.create_task(send_request())
     await callback.answer()
 
 # ——— Хочу браслет ———
