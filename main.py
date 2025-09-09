@@ -30,7 +30,7 @@ bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
 dp = Dispatcher()
 
 # 👤 Твой Telegram ID
-ADMIN_ID = 1030370280
+ADMIN_ID = 1030370280  # ← ЗАМЕНИ НА СВОЙ ID, ЕСЛИ НУЖНО
 
 # Хранение данных
 user_last_birthday = {}  # {user_id: "дата"}
@@ -54,9 +54,6 @@ def load_stats():
 
             if saved_date == current_date:
                 daily_users = set(data.get("daily_users", []))
-                # Пересчитаем новые и повторные
-                new_daily_count = len(daily_users)  # временно, будет обновляться при старте
-                returning_daily_count = 0  # будет считаться при старте
             else:
                 daily_users = set()
                 new_daily_count = 0
@@ -470,21 +467,56 @@ subscribe_button = InlineKeyboardMarkup(
 # ——— команда /start ———
 @dp.message(Command("start"))
 async def start(message: Message):
-    user_id = message.from_user.id
+    args = message.text.split()
+    user = message.from_user
+
+    # Обновляем статистику
+    user_id = user.id
     current_date = datetime.now().strftime("%Y-%m-%d")
     is_new_user = user_id not in all_users
     is_returning_today = user_id in daily_users
 
-    # Обновляем статистику
     if is_new_user:
         all_users.add(user_id)
     if not is_returning_today:
         daily_users.add(user_id)
 
-    # Сохраняем
     save_stats()
 
-    # Отправляем приветствие
+    # Если пришёл с параметром full_analysis
+    if len(args) > 1 and args[1] == "full_analysis":
+        # Отправляем уведомление админу
+        try:
+            await bot.send_message(
+                chat_id=ADMIN_ID,
+                text=(
+                    f"📩 <b>Новый запрос на полный анализ!</b>\n"
+                    f"Клиент: {user.full_name}\n"
+                    f"Юзернейм: @{user.username or 'нет'}\n"
+                    f"ID: {user_id}\n"
+                    f"<a href='tg://user?id={user_id}'>Начать диалог</a>\n\n"
+                    f"Клиент уже в личке — можешь писать!"
+                ),
+                parse_mode="HTML"
+            )
+            logger.info(f"📩 Уведомление админу: клиент {user_id} запросил полный анализ")
+        except Exception as e:
+            logger.error(f"❌ Ошибка отправки админу: {e}")
+
+        # Отправляем клиенту приветствие в личке
+        await bot.send_message(
+            chat_id=user_id,
+            text=(
+                "🌿 <b>Привет! Спасибо, что обратились за полным анализом.</b>\n"
+                "Я — Master Mystic, и я помогу тебе разобрать твою Матрицу судьбы глубоко и бережно.\n\n"
+                "Сейчас я подготовлю для тебя персональное предложение — стоимость, сроки и что ты получишь.\n"
+                "Напиши мне «Готов(а)», если хочешь начать прямо сейчас — или задай любой вопрос 🌞"
+            ),
+            parse_mode="HTML"
+        )
+        return  # Не показываем стандартное приветствие
+
+    # Стандартное приветствие
     await bot.send_message(
         chat_id=message.from_user.id,
         text=(
@@ -501,7 +533,7 @@ async def start(message: Message):
 async def show_stats(message: Message):
     if message.from_user.id == ADMIN_ID:
         current_date = datetime.now().strftime("%d.%m.%Y")
-        new_today = len(daily_users & all_users)  # те, кто впервые сегодня
+        new_today = len(daily_users & all_users)
         returning_today = len(daily_users) - new_today
 
         await message.answer(
@@ -509,7 +541,7 @@ async def show_stats(message: Message):
             f"👥 <b>Всего пользователей:</b> {len(all_users)}\n"
             f"🆕 <b>Новых сегодня:</b> {new_today}\n"
             f"🔁 <b>Повторных сегодня:</b> {returning_today}\n"
-            f"———\n"
+            "———\n"
             "Бот работает стабильно 🚀",
             parse_mode="HTML"
         )
@@ -517,7 +549,7 @@ async def show_stats(message: Message):
     else:
         await message.answer("❌ У вас нет доступа к этой команде.")
 
-# ——— остальные обработчики (без изменений) ———
+# ——— О канале ———
 @dp.message(F.text == "О канале Master Mystic")
 async def subscribe(message: Message):
     await bot.send_message(
@@ -534,11 +566,15 @@ async def subscribe(message: Message):
         parse_mode="HTML"
     )
 
+# ——— Сделать полный анализ ———
 @dp.message(F.text == "Сделать полный анализ")
 async def full_analysis(message: Message):
-    payment_button = InlineKeyboardMarkup(
+    contact_button = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="✅ Продолжить", callback_data="pay")],
+            [InlineKeyboardButton(
+                text="✅ Продолжить",
+                url=f"https://t.me/Mattrehka?start=full_analysis"
+            )],
             [InlineKeyboardButton(text="⏸ Я подумаю", callback_data="think")]
         ]
     )
@@ -549,28 +585,26 @@ async def full_analysis(message: Message):
             "● Денежный код\n"
             "● Призвание и путь души\n"
             "● Кармические задачи\n"
-            "● Зоны силы и слабости\n"
-            "<b>💲 Полный анализ по Матрице судьбы будет стоить 2000₽.</b>\n"
-            "Это не гадание, это анализ по дате рождения. Хочешь получить? Жми «Продолжить» — и я пришлю реквизиты для оплаты. После оплаты — в течение 24 часов пришлю подробный расчёт."
+            "● Зоны силы и слабости\n\n"
+            "<b>Это не гадание — это глубокий анализ по твоей дате рождения.</b>\n"
+            "Нажми «Продолжить» — и ты попадёшь в личные сообщения к <b>Master Mystic</b>. "
+            "Там тебе расскажут всё подробно, ответят на вопросы и помогут сделать следующий шаг 🌿"
         ),
-        reply_markup=payment_button,
+        reply_markup=contact_button,
         parse_mode="HTML"
     )
 
-@dp.callback_query(F.data == "pay")
-async def send_payment_info(callback: CallbackQuery):
-    payment_info = (
-        "💳 <b>Реквизиты для оплаты:</b>\n"
-        "Сбербанк: <code>!!!</code>\n"
-        "После оплаты нажми кнопку <b>ГОТОВО</b> — и я пришлю расчёт."
+# ——— Обработка "Я подумаю" ———
+@dp.callback_query(F.data == "think")
+async def think_callback(callback: CallbackQuery):
+    await callback.message.edit_text(
+        "Хорошо. А пока можешь подписаться на канал <a href='https://t.me/Master_Mystic'>Master Mystic</a>. "
+        "Многие, кто получил свой хвост, уже в канале. Присоединяйся — там живёт самая сильная энергия.",
+        reply_markup=None,
+        parse_mode="HTML"
     )
-    ready_button = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="✅ ГОТОВО", callback_data="ready")]
-        ]
-    )
-    await callback.message.edit_text(payment_info, reply_markup=ready_button, parse_mode="HTML")
 
+# ——— Обработка даты рождения ———
 @dp.message(F.text.regexp(r"^\s*(\d{2})\.\s*(\d{2})\.\s*(\d{4})\s*$"))
 async def handle_date(message: Message):
     try:
@@ -612,7 +646,7 @@ async def handle_date(message: Message):
         reply_markup=InlineKeyboardMarkup(
             inline_keyboard=[
                 [InlineKeyboardButton(text="📖 ЧИТАТЬ ПОЛНОСТЬЮ", url=pdf_url)],
-                [InlineKeyboardButton(text="✅ СДЕЛАТЬ ПОЛНЫЙ АНАЛИЗ", callback_data="full_analysis")]
+                [InlineKeyboardButton(text="✅ СДЕЛАТЬ ПОЛНЫЙ АНАЛИЗ", callback_data="full_analysis_btn")]
             ]
         ),
         parse_mode="HTML"
@@ -643,25 +677,33 @@ async def handle_date(message: Message):
     task = asyncio.create_task(delayed_message())
     pending_notifications[user_id] = task
 
-@dp.message(F.text.func(lambda text: "хочу браслет" in text.lower()))
-async def handle_want_bracelet(message: Message):
+# ——— Кнопка "Сделать полный анализ" под описанием хвоста ———
+@dp.callback_query(F.data == "full_analysis_btn")
+async def full_analysis_btn(callback: CallbackQuery):
     contact_button = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="💬 УТОЧНИТЬ ДЕТАЛИ", url="https://t.me/Mattrehka")]
+            [InlineKeyboardButton(
+                text="✅ Продолжить",
+                url=f"https://t.me/Mattrehka?start=full_analysis"
+            )],
+            [InlineKeyboardButton(text="⏸ Я подумаю", callback_data="think")]
         ]
     )
-    await bot.send_message(
-        chat_id=message.from_user.id,
-        text=(
-            "Отлично! Для того, чтобы <b>Master Mystic</b> начал изготавливать для тебя браслет, нужно уточнить некоторые детали.\n"
-            "Жми <b>«УТОЧНИТЬ ДЕТАЛИ»</b> и введи свою дату рождения.\n"
-            "В течение часа <b>Master Mystic</b> свяжется с тобой и скажет, какие камни подойдут для твоего Кармического хвоста.\n"
-            "Вы обсудите детали по дизайну и доставке."
-        ),
+    await callback.message.answer(
+        "<b>Отлично! В полном анализе ты узнаешь:</b>\n"
+        "● Денежный код\n"
+        "● Призвание и путь души\n"
+        "● Кармические задачи\n"
+        "● Зоны силы и слабости\n\n"
+        "<b>Это не гадание — это глубокий анализ по твоей дате рождения.</b>\n"
+        "Нажми «Продолжить» — и ты попадёшь в личные сообщения к <b>Master Mystic</b>. "
+        "Там тебе расскажут всё подробно, ответят на вопросы и помогут сделать следующий шаг 🌿",
         reply_markup=contact_button,
         parse_mode="HTML"
     )
+    await callback.answer()
 
+# ——— Хочу браслет ———
 @dp.callback_query(F.data == "want_bracelet")
 async def want_bracelet_callback(callback: CallbackQuery):
     contact_button = InlineKeyboardMarkup(
@@ -689,73 +731,24 @@ async def think_bracelet(callback: CallbackQuery):
         parse_mode="HTML"
     )
 
-@dp.callback_query(F.data == "ready")
-async def send_contact(callback: CallbackQuery):
-    user_id = callback.from_user.id
-    user = callback.from_user
-    birth_date = user_last_birthday.get(user_id)
-    if not birth_date:
-        await bot.send_message(chat_id=user_id, text="❌ Вы не вводили дату рождения.", parse_mode="HTML")
-        await callback.message.edit_reply_markup(reply_markup=None)
-        return
-
-    try:
-        await bot.send_message(
-            chat_id=ADMIN_ID,
-            text=(
-                f"<b>Новый клиент:</b> {user.full_name}\n"
-                f"Юзернейм: @{user.username or 'нет'}\n"
-                f"ID: {user_id}\n"
-                f"Дата рождения: {birth_date}\n"
-                f"<a href='tg://user?id={user_id}'>Связаться с клиентом</a>"
-            ),
-            parse_mode="HTML"
-        )
-        logger.info(f"✅ Данные клиента {user_id} отправлены админу")
-    except Exception as e:
-        logger.error(f"❌ Ошибка отправки админу: {e}")
-        await bot.send_message(
-            chat_id=user_id,
-            text="❌ Не удалось отправить данные. Напишите мне в личные сообщения.",
-            parse_mode="HTML"
-        )
-
-    await callback.message.edit_text(
-        "Спасибо за доверие 🙏. В течение 24 часов я пришлю вам результат. "
-        "Если у вас будут вопросы, пишите в личные сообщения <a href='https://t.me/Mattrehka'>Master Mystic</a>",
-        reply_markup=None,
-        parse_mode="HTML"
-    )
-
-@dp.callback_query(F.data == "think")
-async def think_callback(callback: CallbackQuery):
-    await callback.message.edit_text(
-        "Хорошо. А пока можешь подписаться на канал <a href='https://t.me/Master_Mystic'>Master Mystic</a>. "
-        "Многие, кто получил свой хвост, уже в канале. Присоединяйся — там живёт самая сильная энергия.",
-        reply_markup=None,
-        parse_mode="HTML"
-    )
-
-@dp.callback_query(F.data == "full_analysis")
-async def callback_full_analysis(callback: CallbackQuery):
-    payment_button = InlineKeyboardMarkup(
+@dp.message(F.text.func(lambda text: "хочу браслет" in text.lower()))
+async def handle_want_bracelet(message: Message):
+    contact_button = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="✅ Продолжить", callback_data="pay")],
-            [InlineKeyboardButton(text="⏸ Я подумаю", callback_data="think")]
+            [InlineKeyboardButton(text="💬 УТОЧНИТЬ ДЕТАЛИ", url="https://t.me/Mattrehka")]
         ]
     )
-    await callback.message.answer(
-        "<b>Отлично! В полном анализе ты узнаешь:</b>\n"
-        "● Денежный код\n"
-        "● Призвание и путь души\n"
-        "● Кармические задачи\n"
-        "● Зоны силы и слабости\n"
-        "<b>💲 Полный анализ по Матрице судьбы будет стоить 2000₽.</b>\n"
-        "Это не гадание, это анализ по дате рождения. Хочешь получить? Жми «Продолжить» — и я пришлю реквизиты для оплаты. После оплаты — в течение 24 часов пришлю подробный расчёт.",
-        reply_markup=payment_button,
+    await bot.send_message(
+        chat_id=message.from_user.id,
+        text=(
+            "Отлично! Для того, чтобы <b>Master Mystic</b> начал изготавливать для тебя браслет, нужно уточнить некоторые детали.\n"
+            "Жми <b>«УТОЧНИТЬ ДЕТАЛИ»</b> и введи свою дату рождения.\n"
+            "В течение часа <b>Master Mystic</b> свяжется с тобой и скажет, какие камни подойдут для твоего Кармического хвоста.\n"
+            "Вы обсудите детали по дизайну и доставке."
+        ),
+        reply_markup=contact_button,
         parse_mode="HTML"
     )
-    await callback.answer()
 
 # ——— Эндпоинты для Render ———
 async def health(request):
@@ -796,4 +789,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-
