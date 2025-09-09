@@ -5,6 +5,7 @@ import json
 from datetime import datetime
 from aiogram import Bot, Dispatcher, F
 from aiogram.client.default import DefaultBotProperties
+from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, CallbackQuery, Update
 from aiogram.filters import Command
 from aiohttp import web
@@ -25,8 +26,13 @@ else:
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# 🛠️ Инициализация бота
-bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode="HTML"))
+# 🛠️ Инициализация бота с увеличенным таймаутом
+session = AiohttpSession(timeout=300)
+bot = Bot(
+    token=BOT_TOKEN,
+    default=DefaultBotProperties(parse_mode="HTML"),
+    session=session
+)
 dp = Dispatcher()
 
 # 👤 Твой Telegram ID
@@ -737,19 +743,37 @@ async def full_analysis_btn(callback: CallbackQuery):
 # ——— Хочу браслет ———
 @dp.callback_query(F.data == "want_bracelet")
 async def want_bracelet_callback(callback: CallbackQuery):
-    contact_button = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="💬 УТОЧНИТЬ ДЕТАЛИ", url="https://t.me/Mattrehka")]
-        ]
-    )
+    # Убрали переход по URL — теперь просто callback
     await callback.message.edit_text(
-        "Отлично! Для того, чтобы <b>Master Mystic</b> начал изготавливать для тебя браслет, нужно уточнить некоторые детали.\n"
-        "Жми <b>«УТОЧНИТЬ ДЕТАЛИ»</b> и введи свою дату рождения.\n"
-        "В течение часа <b>Master Mystic</b> свяжется с тобой и скажет, какие камни подойдут для твоего Кармического хвоста.\n"
-        "Вы обсудите детали по дизайну и доставке.",
-        reply_markup=contact_button,
+        "🌿 Отлично! Ты запросил(а) браслет для нейтрализации Кармического хвоста.\n"
+        "Master Mystic скоро свяжется с тобой для уточнения деталей — ожидай сообщения 🌞\n\n"
+        "<i>Обычно я отвечаю в течение 15 минут. Если вдруг задержусь — напиши мне «Готов(а)» в личные сообщения.</i>",
         parse_mode="HTML"
     )
+
+    user = callback.from_user
+    birth_date = user_last_birthday.get(user.id, "не указана")
+
+    # Отправляем уведомление админу
+    try:
+        await bot.send_message(
+            chat_id=ADMIN_ID,
+            text=(
+                f"💎 <b>ЗАПРОС НА ИЗГОТОВЛЕНИЕ БРАСЛЕТА</b>\n"
+                f"Клиент: {user.full_name}\n"
+                f"Юзернейм: @{user.username or 'нет'}\n"
+                f"ID: {user.id}\n"
+                f"Дата рождения: {birth_date}\n"
+                f"<a href='tg://user?id={user.id}'>Связаться с клиентом</a>\n\n"
+                f"Клиент ждёт — можешь писать!"
+            ),
+            parse_mode="HTML"
+        )
+        logger.info(f"💎 Уведомление админу: запрос на браслет от {user.id}")
+    except Exception as e:
+        logger.error(f"❌ Ошибка отправки админу (браслет): {e}")
+
+    await callback.answer()
 
 @dp.callback_query(F.data == "think_bracelet")
 async def think_bracelet(callback: CallbackQuery):
@@ -764,22 +788,36 @@ async def think_bracelet(callback: CallbackQuery):
 
 @dp.message(F.text.func(lambda text: "хочу браслет" in text.lower()))
 async def handle_want_bracelet(message: Message):
-    contact_button = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="💬 УТОЧНИТЬ ДЕТАЛИ", url="https://t.me/Mattrehka")]
-        ]
-    )
+    # Убрали переход по URL
     await bot.send_message(
         chat_id=message.from_user.id,
         text=(
-            "Отлично! Для того, чтобы <b>Master Mystic</b> начал изготавливать для тебя браслет, нужно уточнить некоторые детали.\n"
-            "Жми <b>«УТОЧНИТЬ ДЕТАЛИ»</b> и введи свою дату рождения.\n"
-            "В течение часа <b>Master Mystic</b> свяжется с тобой и скажет, какие камни подойдут для твоего Кармического хвоста.\n"
-            "Вы обсудите детали по дизайну и доставке."
+            "🌿 Отлично! Ты запросил(а) браслет для нейтрализации Кармического хвоста.\n"
+            "Master Mystic скоро свяжется с тобой для уточнения деталей — ожидай сообщения 🌞\n\n"
+            "<i>Обычно я отвечаю в течение 15 минут. Если вдруг задержусь — напиши мне «Готов(а)» в личные сообщения.</i>"
         ),
-        reply_markup=contact_button,
         parse_mode="HTML"
     )
+
+    birth_date = user_last_birthday.get(message.from_user.id, "не указана")
+
+    try:
+        await bot.send_message(
+            chat_id=ADMIN_ID,
+            text=(
+                f"💎 <b>ЗАПРОС НА ИЗГОТОВЛЕНИЕ БРАСЛЕТА</b>\n"
+                f"Клиент: {message.from_user.full_name}\n"
+                f"Юзернейм: @{message.from_user.username or 'нет'}\n"
+                f"ID: {message.from_user.id}\n"
+                f"Дата рождения: {birth_date}\n"
+                f"<a href='tg://user?id={message.from_user.id}'>Связаться с клиентом</a>\n\n"
+                f"Клиент ждёт — можешь писать!"
+            ),
+            parse_mode="HTML"
+        )
+        logger.info(f"💎 Уведомление админу: запрос на браслет от {message.from_user.id}")
+    except Exception as e:
+        logger.error(f"❌ Ошибка отправки админу (браслет): {e}")
 
 # ——— Эндпоинты для Render ———
 async def health(request):
@@ -795,12 +833,21 @@ async def main():
         try:
             webhook_info = await bot.get_webhook_info()
             if webhook_info.url != WEBHOOK_URL:
-                await bot.set_webhook(WEBHOOK_URL)
-                logger.info(f"✅ Webhook установлен: {WEBHOOK_URL}")
+                for attempt in range(3):
+                    try:
+                        await bot.set_webhook(WEBHOOK_URL)
+                        logger.info(f"✅ Webhook установлен: {WEBHOOK_URL}")
+                        break
+                    except Exception as e:
+                        logger.warning(f"⚠️ Попытка {attempt + 1} установить webhook не удалась: {e}")
+                        if attempt < 2:
+                            await asyncio.sleep(5)
+                else:
+                    logger.error("❌ Не удалось установить webhook после 3 попыток")
             else:
                 logger.info(f"✅ Webhook уже установлен: {WEBHOOK_URL}")
         except Exception as e:
-            logger.error(f"❌ Ошибка при установке webhook: {e}")
+            logger.error(f"❌ Ошибка при проверке/установке webhook: {e}")
     else:
         logger.warning("⚠️ RENDER_EXTERNAL_HOSTNAME не задан — вебхук не установлен")
 
