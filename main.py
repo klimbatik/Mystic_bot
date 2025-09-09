@@ -570,6 +570,7 @@ async def subscribe(message: Message):
 @dp.message(F.text == "Сделать полный анализ")
 async def full_analysis(message: Message):
     user = message.from_user
+    birth_date = user_last_birthday.get(user.id, "не указана")  # ← ДОБАВЛЕНО
 
     try:
         await bot.send_message(
@@ -579,6 +580,7 @@ async def full_analysis(message: Message):
                 f"Клиент: {user.full_name}\n"
                 f"Юзернейм: @{user.username or 'нет'}\n"
                 f"ID: {user.id}\n"
+                f"Дата рождения: {birth_date}\n"  # ← ДОБАВЛЕНО
                 f"<a href='tg://user?id={user.id}'>Начать диалог</a>\n\n"
                 f"Клиент нажал «Продолжить» — можешь писать!"
             ),
@@ -698,6 +700,7 @@ async def handle_date(message: Message):
 @dp.callback_query(F.data == "full_analysis_btn")
 async def full_analysis_btn(callback: CallbackQuery):
     user = callback.from_user
+    birth_date = user_last_birthday.get(user.id, "не указана")  # ← ДОБАВЛЕНО
 
     try:
         await bot.send_message(
@@ -707,6 +710,7 @@ async def full_analysis_btn(callback: CallbackQuery):
                 f"Клиент: {user.full_name}\n"
                 f"Юзернейм: @{user.username or 'нет'}\n"
                 f"ID: {user.id}\n"
+                f"Дата рождения: {birth_date}\n"  # ← ДОБАВЛЕНО
                 f"<a href='tg://user?id={user.id}'>Начать диалог</a>\n\n"
                 f"Клиент нажал «Продолжить» — можешь писать!"
             ),
@@ -743,7 +747,6 @@ async def full_analysis_btn(callback: CallbackQuery):
 # ——— Хочу браслет ———
 @dp.callback_query(F.data == "want_bracelet")
 async def want_bracelet_callback(callback: CallbackQuery):
-    # Убрали переход по URL — теперь просто callback
     await callback.message.edit_text(
         "🌿 Отлично! Ты запросил(а) браслет для нейтрализации Кармического хвоста.\n"
         "Master Mystic скоро свяжется с тобой для уточнения деталей — ожидай сообщения 🌞\n\n"
@@ -754,7 +757,6 @@ async def want_bracelet_callback(callback: CallbackQuery):
     user = callback.from_user
     birth_date = user_last_birthday.get(user.id, "не указана")
 
-    # Отправляем уведомление админу
     try:
         await bot.send_message(
             chat_id=ADMIN_ID,
@@ -788,7 +790,6 @@ async def think_bracelet(callback: CallbackQuery):
 
 @dp.message(F.text.func(lambda text: "хочу браслет" in text.lower()))
 async def handle_want_bracelet(message: Message):
-    # Убрали переход по URL
     await bot.send_message(
         chat_id=message.from_user.id,
         text=(
